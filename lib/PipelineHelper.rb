@@ -87,7 +87,7 @@ class PipelineHelper
   # is to look in the file runParameters.xml in flowcell's main directory and
   # return the value of the node "RTAVersion". If this file does not exist,
   # check in Basecalling_Netcopy_complete.txt file. 
-  # the node does not exist, return nil
+  # Otherwise, return nil
   def self.findRTAVersion(fcName)
     rtaVersion = nil
     fcPath = findFCPath(fcName) 
