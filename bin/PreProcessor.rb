@@ -37,9 +37,10 @@ class PreProcessor
         buildSampleSheet()
       end
     rescue Exception => e
-      puts "Exception occurred while pre-processing flowcell : " + @fcName.to_s
-      puts e.message
-      puts e.backtrace.inspect
+      $stderr.puts "Exception occurred while pre-processing flowcell : " + @fcName.to_s
+      $stderr.puts e.message
+      $stderr.puts e.backtrace.inspect
+      emailErrorMessage(e.message)
       exit -1
     end
   end
@@ -176,6 +177,17 @@ class PreProcessor
     puts "       Use specific actions only for debugging, running parts of the"
     puts "       code manually."
  end
+
+  # Send email describing the error message to interested watchers
+  def emailErrorMessage(msg)
+    obj          = EmailHelper.new()
+    emailFrom    = "sol-pipe@bcm.edu"
+    emailTo      = obj.getErrorRecepientEmailList()
+    emailSubject = "Error in pre-processing flowcell " + @fcName + " for analysis" 
+    emailText    = "The error is : " + msg.to_s
+
+    obj.sendEmail(emailFrom, emailTo, emailSubject, emailText)
+  end
 end
 
 cmdParams = ARGV

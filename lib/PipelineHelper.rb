@@ -83,6 +83,15 @@ class PipelineHelper
     raise "Did not find Base calls directory for flowcell : " + fcName
   end
 
+  # Method to return the name of the top-level directory where results i.e.,
+  # output of CASAVA is written
+  def self.getResultDir(fcName)
+    baseCallsDir = findBaseCallsDir(fcName)
+    baseCallsDir.strip!
+    outDir = baseCallsDir.gsub(/Data\/Intensities\/BaseCalls/, "Results")
+    return outDir
+  end
+
   # Method to return the RTA version given the flowcell name. Current behavior
   # is to look in the file runParameters.xml in flowcell's main directory and
   # return the value of the node "RTAVersion". If this file does not exist,
