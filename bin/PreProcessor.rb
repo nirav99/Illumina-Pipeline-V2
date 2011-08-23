@@ -14,26 +14,33 @@ class PreProcessor
     initializeDefaultParams()
     parseCommandString(cmdParams)
 
-    @baseCallsDir = PipelineHelper.findBaseCallsDir(@fcName)
+    begin
+      @baseCallsDir = PipelineHelper.findBaseCallsDir(@fcName)
 
-    if @buildFCDefinition == true
-       puts "Creating definition file for flowcell : " + @fcName.to_s
-       createFlowcellDefinitionXML()
-    end
+      if @buildFCDefinition == true
+         puts "Creating definition file for flowcell : " + @fcName.to_s
+         createFlowcellDefinitionXML()
+      end
 
-    if @uploadStartDate == true
-      puts "Uploading analysis start date"
-      uploadAnalysisStartDate()      
-    end
+      if @uploadStartDate == true
+        puts "Uploading analysis start date"
+        uploadAnalysisStartDate()      
+      end
 
-    if @buildBarcodeDefn == true
-       puts "Building local copy of barcode definition"
-       buildBarcodeDefinitionFile()
-    end
+      if @buildBarcodeDefn == true
+         puts "Building local copy of barcode definition"
+         buildBarcodeDefinitionFile()
+      end
 
-    if @buildSampleSheet == true
-      puts "Writing SampleSheet.csv"
-      buildSampleSheet()
+      if @buildSampleSheet == true
+        puts "Writing SampleSheet.csv"
+        buildSampleSheet()
+      end
+    rescue Exception => e
+      puts "Exception occurred while pre-processing flowcell : " + @fcName.to_s
+      puts e.message
+      puts e.backtrace.inspect
+      exit -1
     end
   end
 
