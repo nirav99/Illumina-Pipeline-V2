@@ -33,9 +33,15 @@ class PreProcessor
       end
 
       if @buildSampleSheet == true
-        puts "Writing SampleSheet.csv"
-        buildSampleSheet()
+         puts "Writing SampleSheet.csv"
+         buildSampleSheet()
       end
+
+      if @runNextStep == true
+         puts "Starting BCL -> FastQ Generator"
+         startBCLToFastQConversion()
+      end
+
     rescue Exception => e
       $stderr.puts "Exception occurred while pre-processing flowcell : " + @fcName.to_s
       $stderr.puts e.message
@@ -46,6 +52,7 @@ class PreProcessor
   end
 
   private
+  # Parse the command string and validate the command line arguments
   def parseCommandString(cmdParams)
     cmdParams.each do |line|
       line.strip!
@@ -56,6 +63,7 @@ class PreProcessor
         @uploadStartDate   = true
         @buildSampleSheet  = true
         @buildBarcodeDefn  = true
+        @runNextStep       = true
       elsif line.eql?("action=build_fc_defn")
         @buildFCDefinition = true
       elsif line.eql?("action=upload_start_date")
@@ -64,6 +72,8 @@ class PreProcessor
         @buildSampleSheet  = true
       elsif line.eql?("action=build_barcode_defn")
         @buildBarcodeDefn  = true
+      elsif line.eql?("action=run_next_step")
+        @runNextStep       = true
       end
     end
 
@@ -83,6 +93,7 @@ class PreProcessor
     @buildSampleSheet  = false # Create SampleSheet.csv in BaseCalls dir
     @uploadStartDate   = false # Upload analysis start date to LIMS
     @buildBarcodeDefn  = false # Create a local copy of barcode defn file
+    @runNextStep       = false # Whether to run the next step (BCL->FastQ)
   end
 
   # Contact LIMS and write an XML file having necessary information to start the
@@ -156,6 +167,13 @@ class PreProcessor
     outFile.close()
   end
 
+  # Method to start the next step of the pipeline - BCL -> FastQ conversion
+  def startBCLToFastQConversion()
+    cmd = "ruby " + File.dirname(__FILE__) + "/BclToFastQConvertor.rb " +
+          "fcname=" + @fcName.to_s
+    output = `#{cmd}`
+  end
+
   # Show usage information
   def printUsage()
     puts "Script to prepare the flowcell for analysis"
@@ -171,11 +189,13 @@ class PreProcessor
     puts "  build_sample_sheet : Write SampleSheet.csv in BaseCalls dir"
     puts "  build_barcode_defn : Write a local copy of barcode names and their"
     puts "                       sequences in BaseCalls dir"
+    puts "  run_next_step      : Automatically runs the next step of the pipeline"
+    puts "                       i.e. Create Results directory and run bclToFastQ"
     puts "  all                : Do all of the above"
     puts ""
     puts "Note : For regular use, provide action=all"
-    puts "       Use specific actions only for debugging, running parts of the"
-    puts "       code manually."
+    puts "       Use specific actions only for debugging or running parts of the"
+    puts "       pipeline manually."
  end
 
   # Send email describing the error message to interested watchers
