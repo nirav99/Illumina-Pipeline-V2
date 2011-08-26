@@ -25,6 +25,15 @@ class PipelineHelper
     return limsFCName.to_s
   end
 
+  # Given a flowcell name and the lane or lane barcode name, return the flowcell
+  # barcode name. This is the name by which this event would be represented in
+  # LIMS.
+  def self.getFCBarcodeName(fcName, laneBarcode)
+    limsFCName = formatFlowcellNameForLIMS(fcName)
+    fcBarcode  = limsFCName + "-" + laneBarcode.to_s
+    return fcBarcode
+  end
+
   # This helper method searches for flowcell in list of volumes and returns
   # the path of the flowcell including it's directory.
   # If it does not find the path for flowcell, it aborts with an exception
@@ -136,5 +145,26 @@ class PipelineHelper
     else
       return false
     end
+  end
+
+  # Method to obtain the PU (Platform Unit) field for the RG tag in BAMs. The
+  # format is machine-name_yyyymmdd_FC_Barcode
+  def self.getPUField(fcName, laneBarcode)
+     puField    = nil
+     coreFCName = nil
+     begin
+       runDate    = "20" + fcName.slice(/^\d+/)
+       machName   = fcName.gsub(/^\d+_/,"").slice(/[A-Za-z0-9-]+/).gsub(/SN/, "700")
+       puts "Generating FCName for PU field"
+       coreFCName = PipelineHelper.formatFlowcellNameForLIMS(@fcName) 
+       puts "Core FC Name : "
+       puts coreFCName.to_s
+       puField    = machName.to_s + "_" + runDate.to_s + "_" + 
+                    coreFCName.to_s + "-" + laneBarcode.to_s
+     rescue
+       puField = machName.to_s + "_" + runDate.to_s + "_" +
+                 fcName.to_s + "_" + laneBarcode.to_s 
+     end
+     return puField.to_s
   end
 end

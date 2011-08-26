@@ -1,0 +1,171 @@
+#!/usr/bin/ruby
+
+$:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
+
+require 'EmailHelper'
+require 'PipelineHelper'
+require 'BWAParams'
+require 'AnalysisInfo'
+require 'Scheduler'
+
+# Class to start the analysis for a specific lane barcode of a given flowcell
+# Author: Nirav Shah niravs@bcm.edu
+
+class LaneAnalyzer
+  def initialize(cmdParams)
+    initializeDefaultParams()
+    parseCommandString(cmdParams)
+  end
+
+  def startAnalysis()
+    locateAnalysisDirectory()
+    obtainAnalysisInfo()
+    writeAlignerConfigParams()
+    buildFastqFiles()
+  end
+
+  private
+  def initializeDefaultParams()
+    @fcName       = nil      # Complete flowcell directory name
+    @laneBarcode  = nil      # Lane barcode
+    @fcBarcode    = nil      # Flowcell barcode name (limsFCName-LaneBarcode)
+    @analysisDir  = nil      # Analysis directory path
+    @queueName    = "normal" # Scheduler queue
+    @analysisInfo = nil      # Object having analysis parameters
+  end
+
+  # Parse command line parameters
+  def parseCommandString(cmdParams)
+
+    cmdParams.each do |line|
+      line.strip!
+      if line.match(/fcname=/)
+        @fcName = line.gsub(/fcname=/,"") 
+      elsif line.match(/lanebarcode=/)
+        @laneBarcode = line.gsub(/lanebarcode=/,"")
+      elsif line.match(/queue=/)
+        @queueName = line.gsub(/queue=/, "")
+      end
+    end
+    
+    if @fcName == nil || @laneBarcode == nil
+      printUsage()
+      exit -1
+    elsif
+      @fcBarcode = PipelineHelper.getFCBarcodeName(@fcName, @laneBarcode)
+      puts "Sequencing Event Name : " + @fcBarcode.to_s
+    end
+  end
+
+  # Print the usage information
+  def printUsage()
+    puts __FILE__ + " starts the analysis of the specified lane barcode"
+    puts ""
+    puts "Usage:"
+    puts ""
+    puts "ruby " + __FILE__ + " fcname=value lanebarcode=value queue=value"
+    puts ""
+    puts "fcname      - Full flowcell name"
+    puts "lanebarcode - Lane barcode, format : Lane-BarcodeName"
+    puts "              e.g. 1-ID01"
+    puts "queue       - Scheduler queue. Optional. Default value: normal"
+  end
+
+  # Method to find the directory where the Fastq files for the given sequencing
+  # event are present
+  def locateAnalysisDirectory()
+    rootLevelResultDir = PipelineHelper.getResultDir(@fcName)
+    @analysisDir       = rootLevelResultDir + "/Project_" + @fcName +
+                         "/Sample_" + @fcBarcode
+
+    if !File::exist?(@analysisDir) || !File::directory?(@analysisDir) ||
+       !File::readable?(@analysisDir) || !File::writable?(@analysisDir)
+       msg = "Analysis directory : " + @analysisDir + " does not exist or " +
+             " has incorrect permissions"
+       @analysisDir = nil
+       raise msg
+    end
+  end
+
+  # Read the flowcell definition file and obtain the required set of parameters
+  # to pass to the downstream processes.
+  def obtainAnalysisInfo()
+    baseCallsDir    = PipelineHelper.findBaseCallsDir(@fcName)
+    fcDefinitionXML = baseCallsDir + "/FCDefinition.xml"
+
+    if !File::exist?(fcDefinitionXML)
+      raise "Did not find FCDefinition.xml in directory : " + baseCallsDir
+    end
+
+    # Read various parameter values from FCDefinition.xml and set the
+    # corresponding fields in configParams
+
+    @analysisInfo = AnalysisInfo.new(fcDefinitionXML, @laneBarcode)
+  end
+
+  # Helper method to write the configuration file required by subsequent
+  # processes in the pipeline
+  def writeAlignerConfigParams()
+    puts "Writing config parameters in analysis directory : " + @analysisDir 
+
+    configParams = BWAParams.new
+    configParams.setschedulingQ(@queueName)
+    configParams.setPhixFilter(false)
+    configParams.setRGPUField(getPUField())
+    configParams.setFCBarcode(@fcBarcode)
+    configParams.setReferencePath(@analysisInfo.getReferencePath())
+    configParams.setChipDesignName(@analysisInfo.getChipDesign())
+    configParams.setSampleName(@analysisInfo.getSampleName())
+    configParams.setLibraryName(@analysisInfo.getLibraryName())
+
+    # Write the object to the file
+    configParams.toFile(@analysisDir)
+  end
+
+  def buildFastqFiles()
+    puts "Creating sequence files for : " + @fcBarcode.to_s
+    puts "Sequence type : " + @analysisInfo.getFlowcellType()
+
+    cmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
+          "/lib/FastqBuilder.rb " + @analysisInfo.getFlowcellType() + " " +
+          @fcBarcode
+   
+    puts cmd
+    FileUtils.cd(@analysisDir)
+
+    scheduler = Scheduler.new(@fcBarcode + "_BuildSequences", cmd)
+    scheduler.setMemory(16000)
+    scheduler.setNodeCores(2)
+    scheduler.setPriority(@queue)
+
+    scheduler.runCommand()
+    jobName = scheduler.getJobName()
+    puts "Job Name : " + jobName.to_s
+  end
+  
+  # Method to obtain the PU (Platform Unit) field for the RG tag in BAMs. The
+  # format is machine-name_yyyymmdd_FC_Barcode
+  def getPUField()
+     puField    = nil
+     runDate    = "20" + @fcName.slice(/^\d+/)
+     machName   = @fcName.gsub(/^\d+_/,"").slice(/[A-Za-z0-9-]+/).gsub(/SN/, "700")
+     puField    = machName.to_s + "_" + runDate.to_s + "_" + 
+                  @fcBarcode.to_s 
+     return puField.to_s
+  end
+
+  # Send email describing the error message to interested watchers
+  def emailErrorMessage(msg)
+    obj          = EmailHelper.new()
+    emailFrom    = "sol-pipe@bcm.edu"
+    emailTo      = obj.getErrorRecepientEmailList()
+    emailSubject = "Error in running analysis for  " + @fcBarcode 
+    emailText    = "The error is : " + msg.to_s
+
+    obj.sendEmail(emailFrom, emailTo, emailSubject, emailText)
+  end
+end
+
+cmdParams = ARGV
+obj = LaneAnalyzer.new(cmdParams)
+obj.startAnalysis()
