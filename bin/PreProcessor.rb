@@ -4,7 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 require 'FlowcellDefinitionBuilder'
 require 'EmailHelper'
 require 'AnalysisInfo'
- require 'BarcodeDefinitionBuilder'
+require 'BarcodeDefinitionBuilder'
 
 # Class to prepare the flowcell for analysis.
 # Author: Nirav Shah niravs@bcm.edu

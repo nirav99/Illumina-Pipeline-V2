@@ -5,6 +5,7 @@ require 'EmailHelper'
 require 'Scheduler'
 require 'yaml'
 require 'PipelineHelper'
+require 'AnalysisInfo'
 
 # Class to create the analysis directory and convert BCL files to Fastq files.
 # Author: Nirav Shah niravs@bcm.edu
@@ -18,7 +19,7 @@ class BclToFastQConvertor
       validateRequiredFiles()
       runBclToFastQCommand()
     rescue Exception => e
-      $stderr.puts "Exception occurred while pre-processing flowcell : " + @fcName.to_s
+      $stderr.puts "Exception occurred in BclToFastQConvertor for flowcell : " + @fcName.to_s
       $stderr.puts e.message
       $stderr.puts e.backtrace.inspect
       emailErrorMessage(e.message)
@@ -57,13 +58,14 @@ class BclToFastQConvertor
 
   # Acts like a default constructor
   def initializeDefaultParams()
-    @fcName            = nil   # Flowcell name
-    @baseCallsDir      = nil   # BaseCalls dir of the flowcell
-    @useBasesMask      = nil   # Custom value to provide to BCL->FastQ convertor
-    @sampleSheet       = nil   # Path to SampleSheet.csv
+    @fcName            = nil    # Flowcell name
+    @baseCallsDir      = nil    # BaseCalls dir of the flowcell
+    @useBasesMask      = nil    # Custom value to provide to BCL->FastQ convertor
+    @sampleSheet       = nil    # Path to SampleSheet.csv
     yamlConfigFile     = File.dirname(File.expand_path(File.dirname(__FILE__))) +
                          "/config/config_params.yml" 
     @configReader      = YAML.load_file(yamlConfigFile)
+    @queue             = "high" # The processing queue on the cluster
   end
 
 
@@ -98,16 +100,49 @@ class BclToFastQConvertor
   def runMake()
     puts "Running make to generate Fastq files"
 
-    queue    = "high"
     numCores = @configReader["scheduler"]["highQueue"]["maxCores"]
     cmd      = "make -j" + numCores.to_s
 
     s = Scheduler.new(@fcName + "_BclToFastQ", cmd)
-    s.lockWholeNode(queue)
+    s.lockWholeNode(@queue)
     s.runCommand()
     @bclToFastQMakeJobName = s.getJobName()
 
-    puts "JOB NAME = " +  @bclToFastQMakeJobName.to_s
+    puts "BclToFastq Job Name = " +  @bclToFastQMakeJobName.to_s
+
+    runLaneBarcodes()
+  end
+
+  # Method to run the command  for the next stage of the pipeline, i.e.  to 
+  # build sequence files for each lane barcode and perform the alignment.
+  def runLaneBarcodes()
+    cmdPrefix = "ruby " + File.dirname(__FILE__) + "/LaneAnalyzer.rb fcname=" +
+                @fcName + " queue=normal lanebarcode=" 
+
+    laneBarcodes = AnalysisInfo.getBarcodeList(@baseCallsDir + "/FCDefinition.xml")
+   
+    # Write the list of commands to make sequences for each lane barcode in a
+    # shell script called "barcodes.sh" in the BaseCalls directory. Run this
+    # script to start the next step. 
+    outputFileName = @baseCallsDir + "/barcodes.sh"
+
+    outFile = File.open(outputFileName, "w")
+    outFile.puts "#!/bin/bash"
+
+    laneBarcodes.each do |lbc|
+      outFile.puts cmdPrefix + lbc.to_s
+    end
+    outFile.close
+
+    buildSeqCmd = "sh " + outputFileName
+    obj = Scheduler.new(@fcName + "-LaneBarcodes", buildSeqCmd)
+    obj.setMemory(8000)
+    obj.setNodeCores(1)
+    obj.setPriority(@queue)
+    obj.setDependency(@bclToFastQMakeJobName)
+    obj.runCommand()
+    runLanesJobName = obj.getJobName()
+    puts "Job name to start lanebarcode analyses : " + runLanesJobName.to_s
   end
 
   # Show usage information
