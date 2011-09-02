@@ -21,6 +21,24 @@ public class NBaseCalculator extends MetricsCalculator
   private double threshold    = 0.15;
   
   /**
+   * Inner class to represent spike of N bases in the sequences
+   *
+   */
+  class spike
+  {
+    int startPoint;  // Starting base position of the spike
+    int width;       // Width of the spike
+    
+    boolean greaterThan(spike s2)
+    {
+      if(this.width > s2.width)
+        return true;
+      else
+        return false;
+    }
+  }
+  
+  /**
    * Class constructor
    */
   public NBaseCalculator()
@@ -87,10 +105,31 @@ public class NBaseCalculator extends MetricsCalculator
     resultMetric.setMetricName("DistributionOfN");
     resultMetric.addKeyValue("Bad_Reads_Read1",
                              Integer.toString(badReadsRead1));
+    spike s = spikeDetector(ReadType.READ1);
     
+    if(s.width > 0)
+    {
+      ResultMetric m = new ResultMetric();
+      m.setMetricName("NBasesExceedingThresholdRead1");
+      m.addKeyValue("StartPosition", Integer.toString(s.startPoint));
+      m.addKeyValue("Width", Integer.toString(s.width));
+      resultMetric.addResultMetric(m);
+    }
     if(totalReadsRead2 > 0)
+    {
       resultMetric.addKeyValue("Bad_Reads_Read2",
                                Integer.toString(badReadsRead2));
+      
+      s = spikeDetector(ReadType.READ2);
+      if(s.width > 0)
+      {
+        ResultMetric m = new ResultMetric();
+        m.setMetricName("NBasesExceedingThresholdRead2");
+        m.addKeyValue("StartPosition", Integer.toString(s.startPoint));
+        m.addKeyValue("Width", Integer.toString(s.width));
+        resultMetric.addResultMetric(m);
+      }
+    }
   }
 
   /* 
@@ -167,13 +206,13 @@ public class NBaseCalculator extends MetricsCalculator
         if(totalReadsRead2 > 0 && distRead2.length > 0)
         {
           p = new Plot("DistributionOfN.png", "Distribution of N per base position",
-        		       "Base Position", "Percentage of N", "Read 1", "Read 2",
-        		       xAxis, distRead1, distRead2);
+                       "Base Position", "Percentage of N", "Read 1", "Read 2",
+                       xAxis, distRead1, distRead2);
         }
         else
         {
           p = new Plot("DistributionOfN.png", "Distribution of N per base position",
-        		       "Base Position", "Percentage of N", "Read 1",
+                       "Base Position", "Percentage of N", "Read 1",
                        xAxis, distRead1);
         }
         p.setYScale(0, 100);
@@ -186,5 +225,54 @@ public class NBaseCalculator extends MetricsCalculator
       System.err.println(e.getMessage());
       e.printStackTrace();
     }
+  }
+  
+  /**
+   * Helper method to detect the spike - significant increase in N bases
+   * in the distribution arrays
+   * @param trendArray
+   */
+  private spike spikeDetector(ReadType readType)
+  {
+    int heightThreshold       = 25;
+    int widthThreshold        = 3;
+    int spikeStart            = -1;
+    int width                 = 0;
+    double trendArray[]       = null;
+
+    spike largestSpike = new spike();
+    
+    if(readType == ReadType.READ1)
+    {
+      trendArray = distRead1;
+    }
+    else
+    {
+      trendArray = distRead2;
+    }
+
+    for(int i = 0; i < trendArray.length; i++)
+    {
+      width = 0;
+      
+      while(i < trendArray.length && trendArray[i] >= heightThreshold)
+      {
+        width++;
+        i++;
+      }
+      if(width >= widthThreshold)
+      {
+        spikeStart = i - 1 - width;
+        spike s    = new spike();
+        s.startPoint = spikeStart;
+        s.width      = width;
+ 
+        if(s.greaterThan(largestSpike))
+          largestSpike = s;
+        System.err.println("Found a spike of N starting at position : " + spikeStart + " of width : " + width);
+        s = null;
+      }
+    }
+    return largestSpike;
   }
 }

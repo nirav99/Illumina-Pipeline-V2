@@ -160,16 +160,16 @@ public class AdaptorCalculator extends MetricsCalculator
         if(totalReadsRead2 > 0 && distRead2.length > 0)
         {
           p = new Plot("AdaptorReadDistribution.png", 
-        		       "Distribution of adaptor reads per base position",
-        		       "Base Position", "Number of reads having adaptor", "Read 1", "Read 2",
-        		       xAxis, distRead1, distRead2);
+       	               "Distribution of adaptor reads per base position",
+                       "Base Position", "Number of reads having adaptor",
+                       "Read 1", "Read 2", xAxis, distRead1, distRead2);
         }
         else
         {
           p = new Plot("AdaptorReadDistribution.png", 
-        		       "Distribution of adaptor reads per base position",
-        		       "Base Position", "Number of reads having adaptor", "Read 1",
-                       xAxis, distRead1);
+                       "Distribution of adaptor reads per base position",
+                       "Base Position", "Number of reads having adaptor",
+                       "Read 1", xAxis, distRead1);
         }
         p.setYScale(0, 100);
         p.setXScale(0, maxLen);
