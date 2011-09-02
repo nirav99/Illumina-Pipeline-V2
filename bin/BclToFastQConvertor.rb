@@ -116,8 +116,9 @@ class BclToFastQConvertor
   # Method to run the command  for the next stage of the pipeline, i.e.  to 
   # build sequence files for each lane barcode and perform the alignment.
   def runLaneBarcodes()
-    cmdPrefix = "ruby " + File.dirname(__FILE__) + "/LaneAnalyzer.rb fcname=" +
-                @fcName + " queue=normal lanebarcode=" 
+    cmdPrefix = "ruby " + File.dirname(File.expand_path(__FILE__)) +
+                "/LaneAnalyzer.rb fcname=" + @fcName + " queue=normal " +
+                "lanebarcode=" 
 
     laneBarcodes = AnalysisInfo.getBarcodeList(@baseCallsDir + "/FCDefinition.xml")
    
