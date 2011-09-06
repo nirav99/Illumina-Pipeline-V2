@@ -1,5 +1,6 @@
 package analyzer.SequenceAnalyzer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import analyzer.Common.*;
 import net.sf.picard.fastq.FastqRecord;
@@ -38,6 +39,7 @@ public class NBaseCalculator extends MetricsCalculator
     }
   }
   
+
   /**
    * Class constructor
    */
@@ -105,30 +107,17 @@ public class NBaseCalculator extends MetricsCalculator
     resultMetric.setMetricName("DistributionOfN");
     resultMetric.addKeyValue("Bad_Reads_Read1",
                              Integer.toString(badReadsRead1));
-    spike s = spikeDetector(ReadType.READ1);
     
-    if(s.width > 0)
-    {
-      ResultMetric m = new ResultMetric();
-      m.setMetricName("NBasesExceedingThresholdRead1");
-      m.addKeyValue("StartPosition", Integer.toString(s.startPoint));
-      m.addKeyValue("Width", Integer.toString(s.width));
-      resultMetric.addResultMetric(m);
-    }
+    ArrayList<spike> spikeList = spikeDetector(ReadType.READ1);
+    
+    buildResultMetricHelper(ReadType.READ1, spikeList);
+  
     if(totalReadsRead2 > 0)
     {
       resultMetric.addKeyValue("Bad_Reads_Read2",
                                Integer.toString(badReadsRead2));
-      
-      s = spikeDetector(ReadType.READ2);
-      if(s.width > 0)
-      {
-        ResultMetric m = new ResultMetric();
-        m.setMetricName("NBasesExceedingThresholdRead2");
-        m.addKeyValue("StartPosition", Integer.toString(s.startPoint));
-        m.addKeyValue("Width", Integer.toString(s.width));
-        resultMetric.addResultMetric(m);
-      }
+      spikeList = spikeDetector(ReadType.READ2);
+      buildResultMetricHelper(ReadType.READ2, spikeList);
     }
   }
 
@@ -206,13 +195,13 @@ public class NBaseCalculator extends MetricsCalculator
         if(totalReadsRead2 > 0 && distRead2.length > 0)
         {
           p = new Plot("DistributionOfN.png", "Distribution of N per base position",
-                       "Base Position", "Percentage of N", "Read 1", "Read 2",
-                       xAxis, distRead1, distRead2);
+        		       "Base Position", "Percentage of N", "Read 1", "Read 2",
+        		       xAxis, distRead1, distRead2);
         }
         else
         {
           p = new Plot("DistributionOfN.png", "Distribution of N per base position",
-                       "Base Position", "Percentage of N", "Read 1",
+        		       "Base Position", "Percentage of N", "Read 1",
                        xAxis, distRead1);
         }
         p.setYScale(0, 100);
@@ -232,7 +221,7 @@ public class NBaseCalculator extends MetricsCalculator
    * in the distribution arrays
    * @param trendArray
    */
-  private spike spikeDetector(ReadType readType)
+  private ArrayList<spike> spikeDetector(ReadType readType)
   {
     int heightThreshold       = 25;
     int widthThreshold        = 3;
@@ -240,7 +229,7 @@ public class NBaseCalculator extends MetricsCalculator
     int width                 = 0;
     double trendArray[]       = null;
 
-    spike largestSpike = new spike();
+    ArrayList<spike> spikeList = new ArrayList<spike>();
     
     if(readType == ReadType.READ1)
     {
@@ -267,12 +256,34 @@ public class NBaseCalculator extends MetricsCalculator
         s.startPoint = spikeStart;
         s.width      = width;
  
-        if(s.greaterThan(largestSpike))
-          largestSpike = s;
-        System.err.println("Found a spike of N starting at position : " + spikeStart + " of width : " + width);
+        spikeList.add(s);
+        
+        System.err.println("Found a spike starting at position : " + spikeStart + " of width : " + width);
         s = null;
       }
     }
-    return largestSpike;
+    return spikeList;
+  }
+  
+  /**
+   * Helper method to build the result object. It adds the information about
+   * all regions in reads where number of consecutive N bases exceed width and
+   * height threshold
+   * @param readType
+   * @param spikeList
+   */
+  private void buildResultMetricHelper(ReadType readType, ArrayList<spike> spikeList)
+  {
+    ResultMetric m = null;
+    
+    for(int i = 0; i < spikeList.size(); i++)
+    {
+      m = new ResultMetric();
+      m.setMetricName(readType.toString() + "_Nbase_region" + Integer.toString(i + 1));
+      m.addKeyValue("StartPosition", Integer.toString(spikeList.get(i).startPoint));
+      m.addKeyValue("width", Integer.toString(spikeList.get(i).width));
+      resultMetric.addResultMetric(m);
+      m = null;
+    }
   }
 }
