@@ -31,7 +31,7 @@ public class SequenceAnalyzer extends CommandLineProgram
   @Option(doc = "Stop after debugging N reads. Mainly for debugging. Default value: 0, which means process the whole file")
   public int STOP_AFTER = 0;
   
-  @Option(shortName = StandardOptionDefinitions.OUTPUT_SHORT_NAME, doc = "Output file to write results in txt format", optional=true)
+  @Option(shortName = StandardOptionDefinitions.OUTPUT_SHORT_NAME, doc = "Output file to write results in txt format")
   public File OUTPUT;
 
   @Option(shortName = "X", doc = "File with results in XML format", optional=true)
@@ -67,6 +67,19 @@ public class SequenceAnalyzer extends CommandLineProgram
       IoUtil.assertFileIsReadable(Read2);
       reader2 = new FastqReader(Read2);
     }
+
+    if(OUTPUT != null)
+    {
+      OUTPUT = OUTPUT.getAbsoluteFile();
+      IoUtil.assertFileIsWritable(OUTPUT);
+    }
+
+    if(XMLOUTPUT != null)
+    {
+      XMLOUTPUT = XMLOUTPUT.getAbsoluteFile();
+      IoUtil.assertFileIsWritable(XMLOUTPUT);
+    }
+
     ArrayList<MetricsCalculator> metrics = new ArrayList<MetricsCalculator>();
     metrics.add(new NBaseCalculator());
     metrics.add(new AdaptorCalculator());
