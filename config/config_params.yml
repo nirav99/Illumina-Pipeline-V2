@@ -7,11 +7,21 @@ picard:
 bwa:
   path: "/stornext/snfs5/next-gen/niravs_scratch/code/bwa_test/bwa_0_5_9/bwa-0.5.9/bwa"
 scheduler:
+  queue:
+    normal:
+      maxCores: 8
+    high:
+      maxCores: 8
+    hptest:
+      maxCores: 16
   normalQueue:
     maxCores: 8
   highQueue:
     maxCores: 8
   hptestQueue:
     maxCores: 16
+  memory:
+    minMemory: 28000
+    maxMemory: 28000
 casava:
   bclToFastqPath: "/stornext/snfs5/next-gen/Illumina/GAPipeline/CASAVA1_8/CASAVA1_8-Install/bin/configureBclToFastq.pl"
