@@ -6,14 +6,16 @@
 
 class BWAParams
   def initialize
-    @referencePath = nil      # BWA Reference Path
-    @libraryName   = nil      # Library name of Sample
-    @filterPhix    = false    # Don't filter phix reads
-    @chipDesign    = nil      # Name of chip design
-    @sampleName    = nil      # Sample name
-    @schedulingQ   = "normal" # Scheduler queue to use - high, normal
-    @rgPUField     = nil      # PU field of RG tag (rundate_machine-name_FCbarcode)
-    @fcBarcode     = nil      # Flowcell barcode
+    @referencePath  = nil      # BWA Reference Path
+    @libraryName    = nil      # Library name of Sample
+    @filterPhix     = false    # Don't filter phix reads
+    @chipDesign     = nil      # Name of chip design
+    @sampleName     = nil      # Sample name
+    @schedulingQ    = "normal" # Scheduler queue to use - high, normal
+    @rgPUField      = nil      # PU field of RG tag (rundate_machine-name_FCbarcode)
+    @fcBarcode      = nil      # Flowcell barcode
+    @baseQualFormat = nil      # Base quality format in sequence files
+                               # PHRED+64 or PHRED+33
 
     # Name of config file
     @configFile = "BWAConfigParams.txt"
@@ -49,6 +51,10 @@ class BWAParams
 
   def getFCBarcode()
     return @fcBarcode.to_s
+  end
+
+  def getBaseQualFormat()
+    return baseQualFormat.to_s
   end
 
   def setReferencePath(value)
@@ -89,6 +95,14 @@ class BWAParams
     @fcBarcode = value
   end
 
+  def setBaseQualFormat(value)
+    if !value.eql?("PHRED+64") && !value.eql?("PHRED+33")
+      raise "Error: Base quality can only be PHRED+64 or PHRED+33"
+    else
+      @baseQualFormat = value
+    end
+  end
+
   # Write the config parameters to a file
   def toFile(destDir)
     fileHandle = File.new(destDir + "/" + @configFile, "w")
@@ -127,6 +141,10 @@ class BWAParams
       fileHandle.puts("FC_BARCODE=" + @fcBarcode.to_s)
     end
 
+    if @baseQualFormat != nil && !@baseQualFormat.empty?()
+      fileHandle.puts("BASE_QUAL_FORMAT=" + @baseQualFormat.to_s)
+    end
+
     if @schedulingQ != nil && !@schedulingQ.empty?()
       fileHandle.puts("SCHEDULER_QUEUE=" + @schedulingQ.to_s)
     end
@@ -136,14 +154,15 @@ class BWAParams
 
   # Read the configuration file and build the object
   def loadFromFile()
-    @filterPhix    = false
-    @libraryName   = nil
-    @referencePath = nil
-    @chipDesign    = nil
-    @sampleName    = nil
-    @schedulingQ   = "normal"
-    @rgPUField     = nil
-    @fcBarcode     = nil
+    @filterPhix     = false
+    @libraryName    = nil
+    @referencePath  = nil
+    @chipDesign     = nil
+    @sampleName     = nil
+    @schedulingQ    = "normal"
+    @rgPUField      = nil
+    @fcBarcode      = nil
+    @baseQualFormat = nil
 
     if File::exist?(@configFile)
       lines = IO.readlines(@configFile)
@@ -171,6 +190,9 @@ class BWAParams
         elsif line.match(/FC_BARCODE=\S+/)
           @fcBarcode = line.gsub(/FC_BARCODE=/, "")
           @fcBarcode.strip!
+        elsif line.match(/BASE_QUAL_FORMAT=\S+/)
+          @baseQualFormat = line.gsub(/BASE_QUAL_FORMAT=/, "")
+          @baseQualFormat.strip!
         end
       end
     else
