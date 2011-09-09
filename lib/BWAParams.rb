@@ -54,7 +54,7 @@ class BWAParams
   end
 
   def getBaseQualFormat()
-    return baseQualFormat.to_s
+    return @baseQualFormat.to_s
   end
 
   def setReferencePath(value)
