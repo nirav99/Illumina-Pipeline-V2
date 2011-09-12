@@ -122,6 +122,8 @@ class LaneAnalyzer
     configParams.toFile(@analysisDir)
   end
 
+  # Method to consume the Illumina generated fastq.gz files and generate two
+  # sequence files, one for each read that are purify filtered.
   def buildFastqFiles()
     puts "Creating sequence files for : " + @fcBarcode.to_s
     puts "Sequence type : " + @analysisInfo.getFlowcellType()
@@ -139,8 +141,26 @@ class LaneAnalyzer
     scheduler.setPriority(@queue)
 
     scheduler.runCommand()
-    jobName = scheduler.getJobName()
-    puts "Job Name : " + jobName.to_s
+    fastqJobName = scheduler.getJobName()
+    puts "Job Name : " + fastqJobName.to_s
+
+    startAlignment(fastqJobName)
+  end
+
+  # Method to start the alignment after sequence files are created.
+  def startAlignment(parentJobName)
+    cmd = "ruby " + File.dirname(__FILE__) + "/Aligner.rb"
+
+    scheduler = Scheduler.new(@fcBarcode + "_alignment", cmd)
+    scheduler.setMemory(8000)
+    scheduler.setNodeCores(1)
+    scheduler.setPriority(@queue)
+    scheduler.setDependency(parentJobName)
+
+    scheduler.runCommand()
+
+    alignmentJobName = scheduler.getJobName()
+    puts "Job Name : " + alignmentJobName.to_s
   end
   
   # Method to obtain the PU (Platform Unit) field for the RG tag in BAMs. The
