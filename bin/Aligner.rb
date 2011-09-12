@@ -4,6 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
 require 'Scheduler'
 require 'BWAParams'
+require 'PipelineHelper'
 require 'yaml'
 
 class Aligner
@@ -165,13 +166,12 @@ class Aligner
   # Find the sequence files and determine if the sequence event is fragment or
   # paired-end
   def findSequenceFiles()
-    fileList = Dir["*_sequence.txt"]
+    fileList = nil
+
+    puts "Searching for sequence files"
+    fileList = PipelineHelper.findSequenceFiles(Dir.pwd)
 
     if fileList == nil || fileList.size < 1
-      fileList = Dir["*_sequence.txt.bz2"]
-    end
-
-    if fileList.size < 1
       raise "Could not find sequence files in directory " + Dir.pwd
     elsif fileList.size == 1
       @isFragment = true
@@ -181,7 +181,8 @@ class Aligner
       raise "More than two sequence files detected in directory " + Dir.pwd
     end
 
-    @sequenceFiles = fileList.sort
+    # The fileList is already sorted by PipelineHelper
+    @sequenceFiles = fileList
 
     puts "Found sequence files "
     @sequenceFiles.each do |seqFile|
@@ -251,7 +252,7 @@ class Aligner
   # reads and generates alignment statistics.
   def buildBAMProcessingCmd()
     scriptName = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                 "/AlignerHelper.rb"
+                 "/lib/AlignerHelper.rb"
     cmd = "ruby " + scriptName + " " + @samFileName + " " + @finalBamName + " " +
           @fcBarcode.to_s + " " + @isFragment.to_s
     return cmd

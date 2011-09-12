@@ -167,4 +167,18 @@ class PipelineHelper
      end
      return puField.to_s
   end
+
+  # Method to get the sorted list of sequence files from the specified result
+  #  directory
+  def self.findSequenceFiles(resultDir)
+    fileList = Dir[resultDir + "/*_sequence.txt"]
+
+    if fileList == nil || fileList.size < 1
+      fileList = Dir[resultDir + "/*_sequence.txt.bz2"]
+    end
+
+    if fileList != nil && fileList.size > 0
+      return fileList.sort
+    end
+  end
 end

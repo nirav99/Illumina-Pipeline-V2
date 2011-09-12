@@ -133,6 +133,9 @@ public class UniquenessCalculator extends MetricsCalculator
     else
     {
       File file = new File(tempDir, key + ".seq");
+  
+      // Delete the temp files when Java VM exits"
+      file.deleteOnExit();
       writer    = new BufferedWriter(new FileWriter(file));
       writer.write(kmerSequence);
       writer.newLine();

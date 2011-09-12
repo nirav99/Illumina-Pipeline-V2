@@ -25,3 +25,6 @@ scheduler:
     maxMemory: 28000
 casava:
   bclToFastqPath: "/stornext/snfs5/next-gen/Illumina/GAPipeline/CASAVA1_8/CASAVA1_8-Install/bin/configureBclToFastq.pl"
+captureStats:
+  codeDirectory: "/stornext/snfs5/next-gen/software/hgsc/capture_stats"
+  captureCode: "CaptureStatsBAM5"
