@@ -23,23 +23,40 @@ end
 class LaneResult
 
   # Class constructor
-  def initialize(fcBarcode, readType,  isPaired, demuxBustardSummaryXML, demuxStatsHTM)
+  def initialize(fcBarcode, readType, isPaired, resultStage, demuxBustardSummaryXML, demuxStatsHTM)
     @fcBarcode = fcBarcode
     @readType  = readType 
     @isPaired  = isPaired
+    @resultStage = resultStage # One of two values, SEQUENCE_FINISHED or ANALYSIS_FINISHED
 
     initializeDefaultParameters()
-    getPhasingPrephasing(demuxBustardSummaryXML)
-    getYieldAndClusterInfo(demuxStatsHTM)
+
+    # If the upload stage is "SEQUENCE_FINISHED", upload CASAVA generated
+    # metrics. If the upload stage is "ANALYSIS_FINISHED", upload alignment
+    # metrics and reference path
+    if @resultStage.eql?("SEQUENCE_FINISHED")
+      getPhasingPrephasing(demuxBustardSummaryXML)
+      getYieldAndClusterInfo(demuxStatsHTM)
+    else
+      getReferencePath()
+      getAlignAndErrorPercent()
+    end
   end
 
   # Method to get the result string for LIMS upload
   def getLIMSUploadString()
-    result = @fcBarcode + " SEQUENCE_FINISHED " +  
-             "READ " + @readType.to_s + " PERCENT_PHASING " + @phasing.to_s + 
-             " PERCENT_PREPHASING " + @prePhasing.to_s + " LANE_YIELD_KBASES " +
-             @yield.to_s + " CLUSTERS_PF " + @percentPFClusters.to_s
-
+    if @resultStage.eql?("SEQUENCE_FINISHED")
+      result = @fcBarcode + " SEQUENCE_FINISHED " +  
+               "READ " + @readType.to_s + " PERCENT_PHASING " + @phasing.to_s + 
+               " PERCENT_PREPHASING " + @prePhasing.to_s + " LANE_YIELD_KBASES " +
+               @yield.to_s + " CLUSTERS_PF " + @percentPFClusters.to_s
+    else
+      result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
+               " PERCENT_ALIGN_PF " + @percentAligned.to_s + 
+               " PERCENT_ERROR_RATE_PF " + @percentError.to_s +
+               " REFERENCE_PATH " + @referencePath +
+               " RESULTS_PATH " + FileUtils.pwd 
+    end
     return result
   end
 
@@ -51,6 +68,9 @@ class LaneResult
     @prePhasing        = 0
     @yield             = 0
     @percentPFClusters = 0
+    @referencePath     = ""
+    @percentAligned    = 0
+    @percentError      = 100
   end
 
   # Read DemultiplexedBustardSummary.xml file and obtain values of phasing and
@@ -105,6 +125,41 @@ class LaneResult
     end
   end
 
+  # Helper method to get the reference path from BWA config file
+  def getReferencePath()
+    inputParams = BWAParams.new()
+    inputParams.loadFromFile()
+    @referencePath  = inputParams.getReferencePath()
+
+    if isEmptyOrNull(@referencePath)
+      @referencePath = "none"
+    end
+  end
+
+  # Helper method to get alignment percentage and error rate
+  def getAlignAndErrorPercent()
+    alignmentResultFile = "BAMAnalysisInfo.xml"
+
+    if !File::exist?(alignmentResultFile)
+      raise "Error: Did not find " + alignmentResultFile
+    end
+
+    xmlDoc = Hpricot::XML(open(alignmentResultFile))
+
+    xmlDoc.search("AnalysisMetrics/AlignmentResults").each do |alnRes|
+      readType = alnRes['ReadType']
+
+      if readType.eql?("READ" + @readType)
+        readInfoElem = alnRes.search("ReadInfo")
+
+        if readInfoElem != nil
+          @percentAligned = readInfoElem[0]['PercentMapped']
+          @percentError   = readInfoElem[0]['PercentMismatch']
+        end
+      end
+    end
+  end
+
   # Private helper method to check if the string is null / empty
   def isEmptyOrNull(value)
     if value == nil || value.eql?("")
@@ -116,11 +171,12 @@ class LaneResult
 end
 
 # Class to upload the result string to LIMS
-class SequenceResultUploader
+class ResultUploader
   # Class constructor, the parameter is a complete flowcell name (i.e. directory
   # name)
-  def initialize()
+  def initialize(uploadStage)
     begin
+      @uploadStage = uploadStage
       defaultInitializer()
       getFCBarcode()
       getResultFileNames()
@@ -135,15 +191,15 @@ class SequenceResultUploader
   def uploadResult()
     cmdPrefix  = "perl " + File.dirname(File.expand_path(File.dirname(__FILE__))) + 
                  "/lims_api/setIlluminaLaneStatus.pl"
-    laneResult = LaneResult.new(@fcBarcode, "1", @pairedEnd, @demuxBustardSummaryXML,
-                                @demuxStatsHTM) 
+    laneResult = LaneResult.new(@fcBarcode, "1", @pairedEnd, @uploadStage,
+                                @demuxBustardSummaryXML, @demuxStatsHTM) 
 
     uploadCmd  = cmdPrefix + " " + laneResult.getLIMSUploadString()
     executeUploadCmd(uploadCmd)
 
     if @pairedEnd == true
-      laneResult = LaneResult.new(@fcBarcode, "2", @pairedEnd, @demuxBustardSummaryXML,
-                                  @demuxStatsHTM)
+      laneResult = LaneResult.new(@fcBarcode, "2", @pairedEnd, @uploadStage,
+                                  @demuxBustardSummaryXML, @demuxStatsHTM)
       uploadCmd  = cmdPrefix + " " + laneResult.getLIMSUploadString()
       executeUploadCmd(uploadCmd)
     end
@@ -231,5 +287,12 @@ class SequenceResultUploader
   end
 end
 
-obj = SequenceResultUploader.new()
+uploadStage = ARGV[0]
+
+if uploadStage.upcase.eql?("SEQUENCE_FINISHED")
+  obj = ResultUploader.new("SEQUENCE_FINISHED")
+else
+  obj = ResultUploader.new("ANALYSIS_FINISHED")
+end
+
 obj.uploadResult()

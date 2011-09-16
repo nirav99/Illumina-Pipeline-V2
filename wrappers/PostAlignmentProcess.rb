@@ -7,16 +7,19 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 class PostAlignmentProcess
   def initialize()
     uploadResultsToLIMS()
+    emailAnalysisResults()
     cleanIntermediateFiles()
     zipSequenceFiles()
-    emailAnalysisResults
   end
 
   private
   
   # Method to upload the alignment results to LIMS
   def uploadResultsToLIMS()
-    puts "TODO"
+    uploadCmd = "ruby " + File.dirname(File.expand_path(__FILE__)) +
+            "/ResultUploader.rb ANALYSIS_FINISHED"
+    output    = `#{uploadCmd}`
+    puts output
   end
 
   # Method to email analysis results

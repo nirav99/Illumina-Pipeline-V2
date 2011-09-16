@@ -16,7 +16,7 @@ fcBarcode   = inputParams.getFCBarcode()
 # Upload the sequence generation results (phasing, prephasing, raw clusters,
 # percent purity filtered cluster and yield to LIMS.
 uploadCmd = "ruby " + File.dirname(File.expand_path(__FILE__)) +
-            "/SequenceResultUploader.rb"
+            "/ResultUploader.rb SEQUENCE_FINISHED"
 output    = `#{uploadCmd}`
 puts output
 
