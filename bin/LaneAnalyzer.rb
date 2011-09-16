@@ -144,14 +144,15 @@ class LaneAnalyzer
     fastqJobName = scheduler.getJobName()
     puts "Job Name : " + fastqJobName.to_s
 
-    startAlignment(fastqJobName)
+    postSequenceCommand(fastqJobName)
   end
 
   # Method to start the alignment after sequence files are created.
-  def startAlignment(parentJobName)
-    cmd = "ruby " + File.dirname(__FILE__) + "/Aligner.rb"
+  def postSequenceCommand(parentJobName)
+    cmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
+          "/wrappers/PostSequenceCommands.rb"
 
-    scheduler = Scheduler.new(@fcBarcode + "_alignment", cmd)
+    scheduler = Scheduler.new(@fcBarcode + "_post_sequence", cmd)
     scheduler.setMemory(8000)
     scheduler.setNodeCores(1)
     scheduler.setPriority(@queue)
@@ -159,8 +160,8 @@ class LaneAnalyzer
 
     scheduler.runCommand()
 
-    alignmentJobName = scheduler.getJobName()
-    puts "Job Name : " + alignmentJobName.to_s
+    postSeqJobName = scheduler.getJobName()
+    puts "Job Name : " + postSeqJobName.to_s
   end
   
   # Method to obtain the PU (Platform Unit) field for the RG tag in BAMs. The

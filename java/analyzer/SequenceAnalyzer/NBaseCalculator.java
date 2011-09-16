@@ -279,7 +279,7 @@ public class NBaseCalculator extends MetricsCalculator
     for(int i = 0; i < spikeList.size(); i++)
     {
       m = new ResultMetric();
-      m.setMetricName(readType.toString() + "_Nbase_region" + Integer.toString(i + 1));
+      m.setMetricName(readType.toString() + "_bad_region" + Integer.toString(i + 1));
       m.addKeyValue("StartPosition", Integer.toString(spikeList.get(i).startPoint));
       m.addKeyValue("width", Integer.toString(spikeList.get(i).width));
       resultMetric.addResultMetric(m);
