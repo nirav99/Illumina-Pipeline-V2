@@ -60,7 +60,7 @@ class SequenceAnalyzerWrapper
       cmd = cmd + " R2=" + sequenceFiles[1].strip
     end
 
-    cmd = cmd + " O=" + @fcBarcode + "_uniqness.txt X=" + @fcBarcode +
+    cmd = cmd + " O=" + @fcBarcode + "_uniqueness.txt X=" + @fcBarcode +
           "_uniqueness.xml TMP_DIR=/space1/tmp"
     return cmd
   end
@@ -100,8 +100,8 @@ class SequenceAnalyzerWrapper
                     " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s
     puts limsUploadCmd
 
-    output = `#{limsUploadCmd}`
-    puts "Output from LIMS upload command : " + output.to_s
+#    output = `#{limsUploadCmd}`
+#    puts "Output from LIMS upload command : " + output.to_s
   end
 
   # Method to handle error

@@ -94,7 +94,7 @@ class LaneResult
 
       if dataElements[1].inner_html.eql?(@fcBarcode)
         # Convert yield from MBases to KBases and remove all comma characters
-        @yield             = dataElements[7].inner_html.gsub(",", "").to_i * 1000
+        @yield = dataElements[7].inner_html.gsub(",", "").to_i * 1000
 
         if @isPaired == true
           @yield = @yield / 2
