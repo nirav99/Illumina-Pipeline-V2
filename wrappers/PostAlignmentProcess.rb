@@ -21,7 +21,10 @@ class PostAlignmentProcess
 
   # Method to email analysis results
   def emailAnalysisResults()
-    puts "TODO"
+    cmd = "ruby " + File.dirname(File.expand_path(File.dirname))) +
+          "/lib/ResultMailer.rb" 
+    output = `#{cmd}`
+    puts output
   end
  
   # Delete the intermediate files created during the alignment process
