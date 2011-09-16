@@ -103,6 +103,16 @@ class Aligner
     bamProcessObj.runCommand()
     previousJobName = bamProcessObj.getJobName()
   
+    # If a capture chip design file was specified, run capture stats.
+    if @chipDesign != nil && !@chipDesign.empty?()
+      captureStatsCmd = buildCaptureStatsCmd()
+      capStatsObj = Scheduler.new(@fcBarcode + "_CaptureStats", captureStatsCmd)
+      capStatsObj.lockWholeNode(@queueName)
+      capStatsObj.setDependency(previousJobName)
+      capStatsObj.runCommand()
+      capStatsJobName = capStatsObj.getJobName()
+      previousJobName = capStatsJobName    
+    end
   end
 
   private
@@ -258,9 +268,29 @@ class Aligner
     return cmd
   end
 
+  # Build the command to calculate capture stats  
+  def buildCaptureStatsCmd()
+    scriptName = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
+                 "wrappers/CaptureStats.rb"
+
+    cmd = "ruby " + scriptName + " " @finalBamName + " " + @chipDesign.to_s
+    return cmd
+  end
+
   # Command to run after alignment completes
   def runPostRunCmd(previousJobName)
-    puts "TODO: write code for post run"
+    postRunCmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
+                 "/wrappers/PostAlignmentProcess.rb"
+
+    objPostRun = Scheduler.new(@fcBarcode + "_post_run", postRunCmd)
+    objPostRun.setMemory(2000)
+    objPostRun.setNodeCores(1)
+    objPostRun.setPriority(@queueName)
+
+    if previousJobName != nil && !previousJobName.empty?() 
+      objPostRun.setDependency(previousJobName)
+    end
+    objPostRun.runCommand()
   end
 end
 
