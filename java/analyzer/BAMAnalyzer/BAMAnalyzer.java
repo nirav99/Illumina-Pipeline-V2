@@ -23,9 +23,7 @@ public class BAMAnalyzer extends CommandLineProgram
   public String USAGE = getStandardUsagePreamble() +
   "Read SAM / BAM and calculate alignment and insert size metrics.\r\n";
 
-  //@Option(shortName = StandardOptionDefinitions.INPUT_SHORT_NAME, doc = "Input SAM/BAM(s) to process.")
   @Option(shortName="I", doc="SAM or BAM input file(s)", minElements=1)
-  //public File INPUT;
   public List<File> INPUT = new ArrayList<File>();
 
   @Option(doc = "Stop after debugging N reads. Mainly for debugging. Default value: 0, which means process the whole file")
