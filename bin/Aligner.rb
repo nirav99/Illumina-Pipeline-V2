@@ -113,6 +113,9 @@ class Aligner
       capStatsJobName = capStatsObj.getJobName()
       previousJobName = capStatsJobName    
     end
+
+    # Now hook up the post run command here
+    runPostRunCmd(previousJobName)
   end
 
   private
@@ -271,9 +274,9 @@ class Aligner
   # Build the command to calculate capture stats  
   def buildCaptureStatsCmd()
     scriptName = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
-                 "wrappers/CaptureStats.rb"
+                 "/wrappers/CaptureStats.rb"
 
-    cmd = "ruby " + scriptName + " " @finalBamName + " " + @chipDesign.to_s
+    cmd = "ruby " + scriptName + " " + @finalBamName + " " + @chipDesign.to_s
     return cmd
   end
 

@@ -49,7 +49,7 @@ class LaneResult
       result = @fcBarcode + " SEQUENCE_FINISHED " +  
                "READ " + @readType.to_s + " PERCENT_PHASING " + @phasing.to_s + 
                " PERCENT_PREPHASING " + @prePhasing.to_s + " LANE_YIELD_KBASES " +
-               @yield.to_s + " CLUSTERS_PF " + @percentPFClusters.to_s
+               @yield.to_s + " PERCENT_PF_CLUSTERS " + @percentPFClusters.to_s
     else
       result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
                " PERCENT_ALIGN_PF " + @percentAligned.to_s + 
@@ -182,6 +182,7 @@ class ResultUploader
       getResultFileNames()
       isPairedEnd()
     rescue Exception => e
+      $stderr.puts "Exception occurred : " + e.message
       handleError(e.message)
       puts e.backtrace.inspect
     end
@@ -262,13 +263,16 @@ class ResultUploader
     exitStatus = $?
     output.downcase!
 
+    puts "OUTPUT FROM LIMS : "
+    puts output
+
     if output.match(/error/)
       puts "ERROR IN UPLOADING ANALYSIS RESULTS TO LIMS"
       puts "Error Message From LIMS : " + output
+      handleError("Error in upload sequence metrics to LIMS for " + @fcBarcode) 
     elsif output.match(/success/)
       puts "Successfully uploaded to LIMS"
     end
-    handleError("Error in upload sequence metrics to LIMS for " + @fcBarcode) 
   end
 
   # Handle error and abort.
