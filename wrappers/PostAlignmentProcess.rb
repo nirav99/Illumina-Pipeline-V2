@@ -24,7 +24,7 @@ class PostAlignmentProcess
 
   # Method to email analysis results
   def emailAnalysisResults()
-    cmd = "ruby " + File.dirname(File.expand_path(File.dirname))) +
+    cmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
           "/lib/ResultMailer.rb" 
     output = `#{cmd}`
     puts output
@@ -48,7 +48,7 @@ class PostAlignmentProcess
   def zipSequenceFiles()
     puts "Zipping sequence files"
     zipCmd = "bzip2 *sequence.txt"
-    `#{zipCommand}`
+    `#{zipCmd}`
   end
 end
 
