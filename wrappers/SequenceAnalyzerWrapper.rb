@@ -100,8 +100,8 @@ class SequenceAnalyzerWrapper
                     " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s
     puts limsUploadCmd
 
-#    output = `#{limsUploadCmd}`
-#    puts "Output from LIMS upload command : " + output.to_s
+    output = `#{limsUploadCmd}`
+    puts "Output from LIMS upload command : " + output.to_s
   end
 
   # Method to handle error
