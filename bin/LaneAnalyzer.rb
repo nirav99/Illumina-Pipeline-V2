@@ -118,6 +118,9 @@ class LaneAnalyzer
     configParams.setSampleName(@analysisInfo.getSampleName())
     configParams.setLibraryName(@analysisInfo.getLibraryName())
 
+    # Set the basecalls quality format to phred+33 (Sanger)
+    configParams.setBaseQualFormat("PHRED+33")
+
     # Write the object to the file
     configParams.toFile(@analysisDir)
   end
