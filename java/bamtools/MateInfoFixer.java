@@ -42,11 +42,18 @@ public class MateInfoFixer extends CommandLineProgram
   
   protected SAMFileWriter writer;
 
+  /**
+   * Main method.
+   */
   public static void main(String[] args)
   {
     new MateInfoFixer().instanceMainWithExit(args);
   }
   
+
+  /**
+   * Method to do the actual work.
+   */
   @Override
   protected int doWork()
   {
@@ -67,30 +74,46 @@ public class MateInfoFixer extends CommandLineProgram
     SAMRecord rec1;
     SAMRecord rec2;
     
-    while(iterator.hasNext())
+    try
     {
-      rec1 = iterator.next();
-      rec2 = iterator.hasNext() ? iterator.peek() : null;
-      
-      if(rec2 != null && rec1.getReadName().equals(rec2.getReadName()))
+      while(iterator.hasNext())
       {
-        iterator.next();
-        SamPairUtil.setMateInfo(rec1, rec2, header);
-        writeAlignment(rec1);
-        writeAlignment(rec2);
-        numReadsProcessed += 2;
-      }
-      else
-      {
-        writer.addAlignment(rec1);
-        numReadsProcessed++;
-      }
+        rec1 = iterator.next();
+        rec2 = iterator.hasNext() ? iterator.peek() : null;
       
-      if(numReadsProcessed % 10000000 == 0)
-        System.err.println("Processed " + numReadsProcessed + " reads\r");
+        if(rec2 != null)
+        {
+          if(rec1.getReadName().equals(rec2.getReadName()))
+          {
+            iterator.next();
+            SamPairUtil.setMateInfo(rec1, rec2, header);
+            writeAlignment(rec1);
+            writeAlignment(rec2);
+            numReadsProcessed += 2;
+          }
+          else
+          {
+            throw new Exception("Different read names found : " + rec1.getReadName() + " " + rec2.getReadName());
+          }
+        }
+        else
+        {
+          writer.addAlignment(rec1);
+          numReadsProcessed++;
+        }
+      
+        if(numReadsProcessed % 10000000 == 0)
+          System.err.println("Processed " + numReadsProcessed + " reads\r");
+      }
+      iterator.close();
+      writer.close();
     }
-    iterator.close();
-    writer.close();
+    catch(Exception e)
+    {
+      System.err.println(e.getMessage());
+      e.printStackTrace();
+      System.exit(-1);
+    }
     return 0;
   }
   
