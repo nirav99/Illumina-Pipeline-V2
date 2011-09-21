@@ -35,7 +35,7 @@ class LaneResult
     # metrics. If the upload stage is "ANALYSIS_FINISHED", upload alignment
     # metrics and reference path
     if @resultStage.eql?("SEQUENCE_FINISHED")
-      getPhasingPrephasing(demuxBustardSummaryXML)
+      parseDemuxBustardSummary(demuxBustardSummaryXML)
       getYieldAndClusterInfo(demuxStatsHTM)
     else
       getReferencePath()
@@ -49,7 +49,9 @@ class LaneResult
       result = @fcBarcode + " SEQUENCE_FINISHED " +  
                "READ " + @readType.to_s + " PERCENT_PHASING " + @phasing.to_s + 
                " PERCENT_PREPHASING " + @prePhasing.to_s + " LANE_YIELD_KBASES " +
-               @yield.to_s + " PERCENT_PF_CLUSTERS " + @percentPFClusters.to_s
+               @yield.to_s + " PERCENT_PF_CLUSTERS " + @percentPFClusters.to_s +
+               " FIRST_CYCLE_INT_PF " + @firstCycleInt.to_s + 
+               " PERCENT_INTENSITY_AFTER_20_CYCLES_PF " + @percentIntAfter20.to_s
     else
       result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
                " PERCENT_ALIGN_PF " + @percentAligned.to_s + 
@@ -71,18 +73,20 @@ class LaneResult
     @referencePath     = ""
     @percentAligned    = 0
     @percentError      = 100
+    @firstCycleInt     = 0    # First cycle intensity
+    @percentIntAfter20 = 0    # Percent intensity after 20 cycles
   end
 
-  # Read DemultiplexedBustardSummary.xml file and obtain values of phasing and
-  # prephasing
-  def getPhasingPrephasing(demuxBustardSummaryXML)
+  # Read DemultiplexedBustardSummary.xml file and obtain values of phasing,
+  # prephasing, first cycle intensity and percent intensity after 20 cycles.
+  def parseDemuxBustardSummary(demuxBustardSummaryXML)
     laneNumber = @fcBarcode.slice(/-\d/)
     laneNumber.gsub!(/^-/, "")
 
     xmlDoc = Hpricot::XML(open(demuxBustardSummaryXML))
 
-    (xmlDoc/:'ExpandedLaneSummary Read').each do|read|
-     readNumber = (read/'readNumber').inner_html
+    (xmlDoc/:'ExpandedLaneSummary Read').each do |read|
+      readNumber = (read/'readNumber').inner_html
 
       if readNumber.to_s.eql?(@readType.to_s)
 
@@ -99,7 +103,27 @@ class LaneResult
         end
       end
     end
+
+    (xmlDoc/:'LaneResultsSummary Read').each do |read|
+      readNumber = (read/'readNumber').inner_html
+
+      if readNumber.to_s.eql?(@readType.to_s)
+
+         (read/'Lane').each do |lane|
+           laneNum = (lane/'laneNumber').inner_html
+
+           if laneNum.to_s.eql?(laneNumber.to_s)
+
+             tmp = (lane/'oneSig/mean').inner_html
+             !isEmptyOrNull(tmp) ? @firstCycleInt = tmp : @firstCycleInt = 0 
+             tmp = (lane/'signal20AsPctOf1/mean').inner_html
+             !isEmptyOrNull(tmp) ? @percentIntAfter20 = tmp : @percentIntAfter20 = 0
+           end
+         end
+      end
+    end
   end
+
 
   # Read Demultiplex_Stats.htm file and get values of yield, percent PF clusters
   # and raw clusters (TODO)
