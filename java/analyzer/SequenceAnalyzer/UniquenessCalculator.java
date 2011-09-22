@@ -75,8 +75,16 @@ public class UniquenessCalculator extends MetricsCalculator
     resultMetric.setMetricName("Uniqueness");
     resultMetric.addKeyValue("TotalReads", Long.toString(totalReads));
     resultMetric.addKeyValue("UniqueReads", Long.toString(uniqueReads));
-    double percentUnique = uniqueReads * 1.0 / totalReads * 100.0;
-    resultMetric.addKeyValue("PercentUnique", getFormattedNumber(percentUnique));
+
+    if(totalReads > 0)
+    {
+      double percentUnique = uniqueReads * 1.0 / totalReads * 100.0;
+      resultMetric.addKeyValue("PercentUnique", getFormattedNumber(percentUnique));
+    } 
+    else
+    {
+      resultMetric.addKeyValue("PercentUnique", "0");
+    }
   }
 
   /** 
