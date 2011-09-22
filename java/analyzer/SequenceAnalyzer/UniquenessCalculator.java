@@ -112,13 +112,16 @@ public class UniquenessCalculator extends MetricsCalculator
         fileToRead  = new BufferedReader(new FileReader(new File(tempDir, fileName)));
         helper      = new UniquenessHelper(fileToRead, tempDir);
         totalReads  += helper.getTotalReads();
+ 
+        System.err.println("File : " + fileName + " Total Reads : " + totalReads);
         uniqueReads += helper.getUniqueReads();
         fileToRead.close();
       }
     }
     catch(Exception e)
     {
-      // do something here.
+      System.err.println(e.getMessage());
+      e.printStackTrace();
     }
   }
 
