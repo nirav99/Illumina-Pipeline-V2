@@ -203,12 +203,15 @@ class ResultUploader
       @uploadStage = uploadStage
       defaultInitializer()
       getFCBarcode()
-      getResultFileNames()
+
+      if uploadStage.eql?("SEQUENCE_FINISHED")
+        getResultFileNames()
+      end
       isPairedEnd()
     rescue Exception => e
       $stderr.puts "Exception occurred : " + e.message
-      handleError(e.message)
       puts e.backtrace.inspect
+      handleError(e.message)
     end
   end
 
@@ -283,6 +286,7 @@ class ResultUploader
   # Upload the results to LIMS and check for errors
   def executeUploadCmd(cmd)
     puts "Executing command : " + cmd
+#    return
     output = `#{cmd}`
     exitStatus = $?
     output.downcase!
