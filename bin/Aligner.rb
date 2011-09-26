@@ -274,7 +274,7 @@ class Aligner
   # Build the command to calculate capture stats  
   def buildCaptureStatsCmd()
     scriptName = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
-                 "/wrappers/CaptureStats.rb"
+                 "/blackbox_wrappers/CaptureStats.rb"
 
     cmd = "ruby " + scriptName + " " + @finalBamName + " " + @chipDesign.to_s
     return cmd
