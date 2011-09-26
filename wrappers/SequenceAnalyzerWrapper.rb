@@ -13,6 +13,8 @@ require 'hpricot'
 class SequenceAnalyzerWrapper
   def initialize()
     begin
+      @tmpDirPath = "/space1/tmp/" + ENV['PBS_JOBID'].to_s
+      puts "Path to temp dir = " + @tmpDirPath.to_s
       getFlowcellBarcode()
       cmd = buildCommand()
       runCommand(cmd)
@@ -61,7 +63,7 @@ class SequenceAnalyzerWrapper
     end
 
     cmd = cmd + " O=" + @fcBarcode + "_uniqueness.txt X=" + @fcBarcode +
-          "_uniqueness.xml TMP_DIR=/space1/tmp"
+          "_uniqueness.xml TMP_DIR=" + @tmpDirPath.to_s
     return cmd
   end
 
@@ -74,6 +76,11 @@ class SequenceAnalyzerWrapper
 
     puts "Return value   : " + returnValue.to_s
     puts "Execution time : " + (endTime - startTime).to_s
+
+    puts "Deleting temp files from tempdir"
+
+    cmd = "rm " + @tmpDirPath + "/*.seq"
+    `#{cmd}`
 
     if returnValue != 0
       handleError("SequenceAnalyzer failed for flowcell : " + @fcBarcode)
@@ -99,7 +106,7 @@ class SequenceAnalyzerWrapper
     limsUploadCmd = "perl " + limsScript + " " + @fcBarcode + 
                     " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s
     puts limsUploadCmd
-
+    return
     output = `#{limsUploadCmd}`
     puts "Output from LIMS upload command : " + output.to_s
   end
