@@ -12,6 +12,7 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 require 'asshaul.rb'
 require 'fileutils'
 require 'PipelineHelper.rb'
+require 'PathInfo'
 
 # Class to automatically start the flowcells. It runs as part of a crontab job.
 # On detecting that a flowcell has copied, it starts the analysis automatically.
@@ -189,7 +190,7 @@ private
   def processFlowcell(fcName)
     puts "Starting analysis for flowcell : " + fcName.to_s
     currDir = Dir.pwd
-    Dir::chdir("/stornext/snfs5/next-gen/Illumina/ipipeV2/bin")
+    Dir::chdir(PathInfo::BIN_DIR)
     cmd = "ruby PreProcessor.rb  fcname=" + fcName.to_s + " action=all"
     puts "Running command : " + cmd.to_s
 #=begin
