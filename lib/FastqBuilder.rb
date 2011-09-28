@@ -84,7 +84,9 @@ class FastqBuilder
     else
        writeFinalSequenceFrag()
     end 
-    showStatistics()
+    logFile = File.open("ReadsPassingPurityFilter.metrics", "w")
+    showStatistics(logFile)
+    logFile.close()
   end
 
   def writeFinalSequencesPE()
@@ -168,21 +170,21 @@ class FastqBuilder
   end
 
   # Show the results of filtering
-  def showStatistics()
-    puts "Read Type : Read 1"
-    puts "Total Reads                   : " + @numReadsRead1.to_s
-    puts "Total Filtered Reads          : " + @numFilteredRead1.to_s
+  def showStatistics(outputStream)
+    outputStream.puts "Read Type : Read 1"
+    outputStream.puts "Total Reads                   : " + @numReadsRead1.to_s
+    outputStream.puts "Total Filtered Reads          : " + @numFilteredRead1.to_s
     percentagePassed = @numFilteredRead1.to_f /  @numReadsRead1.to_f * 100.0
-    puts "Percent Reads Passed Filter   : " + percentagePassed.to_s
-    puts ""
+    outputStream.puts "Percent Reads Passed Filter   : " + percentagePassed.to_s
+    outputStream.puts ""
 
     if @numReadsRead2 > 0
-      puts "Read Type : Read 2"
-      puts "Total Reads                 : " + @numReadsRead2.to_s
-      puts "Total Filtered Reads        : " + @numFilteredRead2.to_s
+      outputStream.puts "Read Type : Read 2"
+      outputStream.puts "Total Reads                 : " + @numReadsRead2.to_s
+      outputStream.puts "Total Filtered Reads        : " + @numFilteredRead2.to_s
       percentagePassed = @numFilteredRead2.to_f /  @numReadsRead2.to_f * 100.0
-      puts "Percent Reads Passed Filter : " + percentagePassed.to_s
-      puts ""
+      outputStream.puts "Percent Reads Passed Filter : " + percentagePassed.to_s
+      outputStream.puts ""
     end
   end
 end

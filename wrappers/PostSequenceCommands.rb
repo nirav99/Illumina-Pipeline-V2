@@ -4,6 +4,7 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
 require 'Scheduler'
 require 'BWAParams'
+require 'PathInfo'
 
 #Commands to run after sequence generation is complete.
 #Author: Nirav Shah niravs@bcm.edu
@@ -15,13 +16,12 @@ fcBarcode   = inputParams.getFCBarcode()
 
 # Upload the sequence generation results (phasing, prephasing, raw clusters,
 # percent purity filtered cluster and yield to LIMS.
-uploadCmd = "ruby " + File.dirname(File.expand_path(__FILE__)) +
-            "/ResultUploader.rb SEQUENCE_FINISHED"
+uploadCmd = "ruby " + PathInfo::WRAPPER_DIR + "/ResultUploader.rb SEQUENCE_FINISHED"
 output    = `#{uploadCmd}`
 puts output
 
 # Command to start sequence analysis
-seqAnalyzerCmd = "ruby " + File.expand_path(File.dirname(__FILE__)) + "/SequenceAnalyzerWrapper.rb"
+seqAnalyzerCmd = "ruby " + PathInfo::WRAPPER_DIR + "/SequenceAnalyzerWrapper.rb"
 sch1 = Scheduler.new(fcBarcode + "_SequenceAnalysis", seqAnalyzerCmd)
 sch1.setMemory(8000)
 sch1.setNodeCores(1)
@@ -30,8 +30,7 @@ sch1.runCommand()
 uniqJobName = sch1.getJobName()
 
 # Command to start the alignment
-alignerCmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
-             "/bin/Aligner.rb"
+alignerCmd = "ruby " + PathInfo::BIN_DIR + "/Aligner.rb"
 
 output = `#{alignerCmd}`
 puts output

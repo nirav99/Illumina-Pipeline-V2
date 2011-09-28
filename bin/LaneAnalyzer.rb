@@ -7,6 +7,7 @@ require 'PipelineHelper'
 require 'BWAParams'
 require 'AnalysisInfo'
 require 'Scheduler'
+require 'PathInfo'
 
 # Class to start the analysis for a specific lane barcode of a given flowcell
 # Author: Nirav Shah niravs@bcm.edu
@@ -131,9 +132,8 @@ class LaneAnalyzer
     puts "Creating sequence files for : " + @fcBarcode.to_s
     puts "Sequence type : " + @analysisInfo.getFlowcellType()
 
-    cmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
-          "/lib/FastqBuilder.rb " + @analysisInfo.getFlowcellType() + " " +
-          @fcBarcode
+    cmd = "ruby " + PathInfo::LIB_DIR + "/FastqBuilder.rb " + 
+          @analysisInfo.getFlowcellType() + " " + @fcBarcode
    
     puts cmd
     FileUtils.cd(@analysisDir)
@@ -152,8 +152,9 @@ class LaneAnalyzer
 
   # Method to start the alignment after sequence files are created.
   def postSequenceCommand(parentJobName)
-    cmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
-          "/wrappers/PostSequenceCommands.rb"
+    cmd = "ruby " + PathInfo::WRAPPER_DIR + "/PostSequenceCommands.rb"
+    puts "Post Sequence Command"
+    puts cmd.to_s
 
     scheduler = Scheduler.new(@fcBarcode + "_post_sequence", cmd)
     scheduler.setMemory(8000)

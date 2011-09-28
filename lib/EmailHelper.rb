@@ -1,8 +1,12 @@
 #!/usr/bin/ruby
+
+$:.unshift File.dirname(__FILE__)
+
 require 'rubygems'
 require 'hpricot'
 require 'fileutils'
 require 'net/smtp'
+require 'PathInfo'
 
 # This class encapsulates common routines required by email utilities
 # Author Nirav Shah niravs@bcm.edu
@@ -51,8 +55,7 @@ END_OF_MESSAGE
 
   # Method to send email with one or multiple attachments
   def sendEmailWithAttachment(from, to, subject, message, attachment)
-    jarPath = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-              "/java/AttachmentMailer.jar" 
+    jarPath = PathInfo::JAVA_DIR + "/AttachmentMailer.jar" 
 
     cmd = "java -jar " + jarPath + " sender=" + from + " sub=\"" + subject + "\" " + 
           " body=" + "\"" + message.to_s + "\""
@@ -77,8 +80,7 @@ END_OF_MESSAGE
   # Obtain the list of email addresses who need to be emailed the results
   # or errors
   def getEmailList()
-    emailListFile = File.dirname(File.expand_path(File.dirname(__FILE__))) + "/config/" +
-                    "email_recepients.txt"
+    emailListFile = PathInfo::CONFIG_DIR + "/email_recepients.txt"
     lines = IO.readlines(emailListFile)
 
     lines.each do |line|

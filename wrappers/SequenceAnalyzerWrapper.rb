@@ -6,6 +6,7 @@ require 'EmailHelper'
 require 'BWAParams'
 require 'rubygems'
 require 'hpricot'
+require 'PathInfo'
 
 # Wrapper for SequenceAnalyzer
 # Author: Nirav Shah niravs@bcm.edu
@@ -41,8 +42,7 @@ class SequenceAnalyzerWrapper
 
   # Helper method to build the Jar command to perform sequence analysis.  
   def buildCommand()
-    jarName = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
-              "/java/SequenceAnalyzer.jar"
+    jarName = PathInfo::JAVA_DIR + "/SequenceAnalyzer.jar"
 
     sequenceFiles = PipelineHelper.findSequenceFiles(Dir.pwd)
 
@@ -100,8 +100,7 @@ class SequenceAnalyzerWrapper
 
     puts "Unique Percentage : " + uniquePercent.to_s
     
-    limsScript = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                 "/lims_api/setIlluminaLaneStatus.pl"
+    limsScript = PathInfo::LIMS_API_DIR + "/setIlluminaLaneStatus.pl"
 
     limsUploadCmd = "perl " + limsScript + " " + @fcBarcode + 
                     " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s

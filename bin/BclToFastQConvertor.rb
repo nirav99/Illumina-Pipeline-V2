@@ -6,6 +6,7 @@ require 'Scheduler'
 require 'yaml'
 require 'PipelineHelper'
 require 'AnalysisInfo'
+require 'PathInfo'
 
 # Class to create the analysis directory and convert BCL files to Fastq files.
 # Author: Nirav Shah niravs@bcm.edu
@@ -62,8 +63,8 @@ class BclToFastQConvertor
     @baseCallsDir      = nil    # BaseCalls dir of the flowcell
     @useBasesMask      = nil    # Custom value to provide to BCL->FastQ convertor
     @sampleSheet       = nil    # Path to SampleSheet.csv
-    yamlConfigFile     = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                         "/config/config_params.yml" 
+
+    yamlConfigFile     = PathInfo::CONFIG_DIR + "/config_params.yml" 
     @configReader      = YAML.load_file(yamlConfigFile)
     @queue             = "high" # The processing queue on the cluster
   end
@@ -116,7 +117,7 @@ class BclToFastQConvertor
   # Method to run the command  for the next stage of the pipeline, i.e.  to 
   # build sequence files for each lane barcode and perform the alignment.
   def runLaneBarcodes()
-    cmdPrefix = "ruby " + File.dirname(File.expand_path(__FILE__)) +
+    cmdPrefix = "ruby " + PathInfo::BIN_DIR +
                 "/LaneAnalyzer.rb fcname=" + @fcName + " queue=normal " +
                 "lanebarcode=" 
 

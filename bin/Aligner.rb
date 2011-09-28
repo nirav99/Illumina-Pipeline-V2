@@ -6,6 +6,7 @@ require 'Scheduler'
 require 'BWAParams'
 require 'PipelineHelper'
 require 'yaml'
+require 'PathInfo'
 
 class Aligner
   # Constructor - prepare the context
@@ -157,8 +158,8 @@ class Aligner
   # directory, and the number of node cores for the queue specified. This method
   # must be called ONLY after readConfigParams
   def obtainPathAndResourceInfo()
-    yamlConfigFile = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                     "/config/config_params.yml" 
+
+    yamlConfigFile = PathInfo::CONFIG_DIR + "/config_params.yml" 
 
     configReader = YAML.load_file(yamlConfigFile)
 
@@ -173,7 +174,7 @@ class Aligner
     @bwaPath = configReader["bwa"]["path"]
     puts "BWA Path = " + @bwaPath
     
-    @javaDir = File.dirname(File.expand_path(File.dirname(__FILE__))) + "/java" 
+    @javaDir = PathInfo::JAVA_DIR 
   end
 
   # Find the sequence files and determine if the sequence event is fragment or
@@ -264,8 +265,9 @@ class Aligner
   # Build the command that converts SAM to BAM, sorts it, mark duplicates, fixes
   # reads and generates alignment statistics.
   def buildBAMProcessingCmd()
-    scriptName = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                 "/lib/AlignerHelper.rb"
+
+    scriptName = PathInfo::LIB_DIR + "/AlignerHelper.rb"
+
     cmd = "ruby " + scriptName + " " + @samFileName + " " + @finalBamName + " " +
           @fcBarcode.to_s + " " + @isFragment.to_s
     return cmd
@@ -273,8 +275,7 @@ class Aligner
 
   # Build the command to calculate capture stats  
   def buildCaptureStatsCmd()
-    scriptName = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
-                 "/blackbox_wrappers/CaptureStats.rb"
+    scriptName = PathInfo::BLACK_BOX_DIR + "/CaptureStats.rb"
 
     cmd = "ruby " + scriptName + " " + @finalBamName + " " + @chipDesign.to_s
     return cmd
@@ -282,8 +283,7 @@ class Aligner
 
   # Command to run after alignment completes
   def runPostRunCmd(previousJobName)
-    postRunCmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                 "/wrappers/PostAlignmentProcess.rb"
+    postRunCmd = "ruby " + PathInfo::WRAPPER_DIR + "/PostAlignmentProcess.rb"
 
     objPostRun = Scheduler.new(@fcBarcode + "_post_run", postRunCmd)
     objPostRun.setMemory(2000)

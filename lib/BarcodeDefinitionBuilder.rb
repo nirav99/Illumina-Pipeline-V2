@@ -1,5 +1,9 @@
 #!/usr/bin/ruby
 
+$:.unshift File.dirname(__FILE__)
+
+require 'PathInfo'
+
 # Class to create a mapping between the barcode tag IDs and the actual barcode
 # sequences. 
 # Author Nirav Shah niravs@bcm.edu
@@ -40,8 +44,7 @@ class  BarcodeDefinitionBuilder
     outputFileName = getBarcodeDefinitionFileName(outputDirectory)
     outputFile = File.open(outputFileName, "w")
 
-    barcodeLabelFile = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                       "/config/barcode_label.txt"
+    barcodeLabelFile = PathInfo::CONFIG_DIR + "/barcode_label.txt"
 
     lines = IO.readlines(barcodeLabelFile)
 

@@ -5,6 +5,7 @@ require 'FlowcellDefinitionBuilder'
 require 'EmailHelper'
 require 'AnalysisInfo'
 require 'BarcodeDefinitionBuilder'
+require 'PathInfo'
 
 # Class to prepare the flowcell for analysis.
 # Author: Nirav Shah niravs@bcm.edu
@@ -106,8 +107,7 @@ class PreProcessor
   def uploadAnalysisStartDate()
     fcNameForLIMS = PipelineHelper.formatFlowcellNameForLIMS(@fcName)
 
-    limsScript = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
-                 "/lims_api/setFlowCellAnalysisStartDate.pl"
+    limsScript = PathInfo::LIMS_API_DIR + "/setFlowCellAnalysisStartDate.pl"
 
     uploadCmd = "perl " + limsScript + " " + fcNameForLIMS
     output = `#{uploadCmd}`
@@ -169,7 +169,7 @@ class PreProcessor
 
   # Method to start the next step of the pipeline - BCL -> FastQ conversion
   def startBCLToFastQConversion()
-    cmd = "ruby " + File.dirname(__FILE__) + "/BclToFastQConvertor.rb " +
+    cmd = "ruby " + PathInfo::BIN_DIR + "/BclToFastQConvertor.rb " +
           "fcname=" + @fcName.to_s
     output = `#{cmd}`
   end

@@ -2,6 +2,8 @@
 
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
+require 'PathInfo'
+
 # Script to perform cleanup after alignment is complete.
 # Author: Nirav Shah niravs@bcm.edu
 class PostAlignmentProcess
@@ -16,16 +18,15 @@ class PostAlignmentProcess
   
   # Method to upload the alignment results to LIMS
   def uploadResultsToLIMS()
-    uploadCmd = "ruby " + File.dirname(File.expand_path(__FILE__)) +
-            "/ResultUploader.rb ANALYSIS_FINISHED"
+    uploadCmd = "ruby " + PathInfo::WRAPPER_DIR + 
+                "/ResultUploader.rb ANALYSIS_FINISHED"
     output    = `#{uploadCmd}`
     puts output
   end
 
   # Method to email analysis results
   def emailAnalysisResults()
-    cmd = "ruby " + File.dirname(File.expand_path(File.dirname(__FILE__))) +
-          "/lib/ResultMailer.rb" 
+    cmd = "ruby " + PathInfo::LIB_DIR + "/ResultMailer.rb" 
     output = `#{cmd}`
     puts output
   end
@@ -39,7 +40,7 @@ class PostAlignmentProcess
    # Be careful here, delete only _sorted.bam
    puts "Deleting intermediate BAM file"
    deleteTempBAMFileCmd = "rm *_sorted.bam"
-  `#{deleteTempBAMFileCmd}`
+#  `#{deleteTempBAMFileCmd}`
   end
 
   # Zip the final sequence files to save disk space. Potential improvement: The
