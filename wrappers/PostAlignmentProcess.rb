@@ -40,7 +40,7 @@ class PostAlignmentProcess
    # Be careful here, delete only _sorted.bam
    puts "Deleting intermediate BAM file"
    deleteTempBAMFileCmd = "rm *_sorted.bam"
-#  `#{deleteTempBAMFileCmd}`
+  `#{deleteTempBAMFileCmd}`
   end
 
   # Zip the final sequence files to save disk space. Potential improvement: The

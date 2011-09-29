@@ -79,7 +79,8 @@ class PreProcessor
     end
 
     if @fcName == nil || (@buildFCDefinition == false && @buildSampleSheet ==
-       false && @uploadStartDate == false && @buildBarcodeDefn == false)
+       false && @uploadStartDate == false && @buildBarcodeDefn == false &&
+       @runNextStep == false)
        printUsage()
        exit -1
     end
