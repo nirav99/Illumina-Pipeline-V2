@@ -1,6 +1,13 @@
 #!/usr/bin/ruby
 
+$:.unshift File.join(File.dirname(__FILE__), ".", "..", "config")
+$:.unshift File.dirname(__FILE__)
+
+require 'yaml'
+require 'PathInfo'
+
 # Class to encapsulate commands to scheduler (MOAB for now)
+
 class Scheduler
   def initialize(jobNamePrefix, jobCommand)
     @userCmd   = jobCommand
@@ -34,22 +41,20 @@ class Scheduler
   end
 
   # Method to lock down a complete node. 
-  # Nodes in hptest have 16 cores. Hence, use value of 16 if the queue is
-  # hptest, or use 8 cores otherwise. 
+  # Read the configuration of queues from yaml config file.
   # Do not use methods setNodeCores, setPriority and setMemory if this method is
   # used.
   def lockWholeNode(queueName)
     if queueName == nil || queueName.empty?()
       raise "Scheduler queue cannot be null or empty"
     end
+
+    yamlConfigFile = PathInfo::CONFIG_DIR + "/config_params.yml" 
+    configReader = YAML.load_file(yamlConfigFile)
     @priority = queueName.downcase
-    if @priority.eql?("hptest")
-      @numCores = 16
-      @memory   = 28000
-    else
-      @numCores = 8
-      @memory   = 28000
-    end
+
+    @memory   = configReader["scheduler"]["queue"][@priority]["maxMemory"]
+    @numCores = configReader["scheduler"]["queue"][@priority]["maxCores"]
   end
 
   # Get the name of the job to run
