@@ -41,7 +41,7 @@ public class AttachmentMailer
     this.emailBody       = body;
 //    this.emailHost       = "smtp.bcm.tmc.edu";
     
-    InputStream is = AttachmentMailer.class.getResourceAsStream("EmailHost.config");
+    InputStream is = getClass().getResourceAsStream("EmailHost.config");
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     String line = reader.readLine();
     

@@ -10,19 +10,13 @@ scheduler:
   queue:
     normal:
       maxCores: 8
+      maxMemory: 28000
     high:
       maxCores: 8
+      maxMemory: 28000
     hptest:
       maxCores: 16
-  normalQueue:
-    maxCores: 8
-  highQueue:
-    maxCores: 8
-  hptestQueue:
-    maxCores: 16
-  memory:
-    minMemory: 28000
-    maxMemory: 28000
+      maxMemory: 28000
 casava:
   bclToFastqPath: "/stornext/snfs5/next-gen/Illumina/GAPipeline/CASAVA1_8/CASAVA1_8-Install/bin/configureBclToFastq.pl"
 captureStats:

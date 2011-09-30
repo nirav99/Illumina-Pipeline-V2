@@ -101,7 +101,7 @@ class BclToFastQConvertor
   def runMake()
     puts "Running make to generate Fastq files"
 
-    numCores = @configReader["scheduler"]["highQueue"]["maxCores"]
+    numCores = @configReader["scheduler"]["queue"]["high"]["maxCores"]
     cmd      = "make -j" + numCores.to_s
 
     s = Scheduler.new(@fcName + "_BclToFastQ", cmd)
