@@ -164,7 +164,7 @@ class Aligner
     configReader = YAML.load_file(yamlConfigFile)
 
     # Obtain resources to use on the cluster
-    @maxMemory = configReader["scheduler"]["memory"][@queueName]["maxMemory"]
+    @maxMemory = configReader["scheduler"]["queue"][@queueName]["maxMemory"]
     puts "Max memory : " + @maxMemory.to_s
 
     @maxNodeCores = configReader["scheduler"]["queue"][@queueName]["maxCores"]
