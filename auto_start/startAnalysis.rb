@@ -23,8 +23,11 @@ require 'PathInfo'
 # Author: Nirav Shah niravs@bcm.edu
 
 class AnalysisStarter
-  def initialize(baseDir)
+  def initialize()
     initializeMembers()
+
+    baseDir = PipelineHelper.getInstrumentRootDir()
+    puts "Root directory to look for new flowcells : " + baseDir
 
     # Attempt to obtain the lock, if another instance of this program is
     # running, this operation will fail. Print a suitable message and exit.
@@ -201,4 +204,4 @@ private
   end
 end
 
-obj = AnalysisStarter.new("/stornext/snfs0/next-gen/Illumina/Instruments")
+obj = AnalysisStarter.new()

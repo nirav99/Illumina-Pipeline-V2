@@ -1,7 +1,12 @@
 #!/usr/bin/ruby
+
+$:.unshift File.dirname(__FILE__)
+
 require 'rubygems'
 require 'hpricot'
 require 'fileutils'
+require 'yaml'
+require 'PathInfo'
 
 # This class encapsulates common routines required by other 
 # pipeline scripts
@@ -42,8 +47,7 @@ class PipelineHelper
       parentDir = Array.new
 
       # This represents location where to search for flowcell
-      rootDir    = "/stornext/snfs0/next-gen/Illumina/Instruments"
-      # To add additional locations, append to array rootDir
+      rootDir    = getInstrumentRootDir() 
 
       dirEntries = Dir.entries(rootDir)
 
@@ -180,5 +184,13 @@ class PipelineHelper
     if fileList != nil && fileList.size > 0
       return fileList.sort
     end
+  end
+
+  # Method to find the root directory where the sequencers write their data
+  def self.getInstrumentRootDir()
+    configFile   = PathInfo::CONFIG_DIR + "/config_params.yml"
+    configReader = YAML.load_file(configFile)
+    rootDir      = configReader["sequencers"]["rootDir"]
+    return rootDir
   end
 end

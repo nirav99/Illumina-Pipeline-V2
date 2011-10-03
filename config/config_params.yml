@@ -22,3 +22,5 @@ casava:
 captureStats:
   codeDirectory: "/stornext/snfs5/next-gen/software/hgsc/capture_stats"
   captureCode: "CaptureStatsBAM5"
+sequencers:
+  rootDir: "/stornext/snfs0/next-gen/Illumina/Instruments"
