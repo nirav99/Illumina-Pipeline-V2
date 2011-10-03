@@ -119,7 +119,7 @@ class BclToFastQConvertor
   def runLaneBarcodes()
     cmdPrefix = "ruby " + PathInfo::BIN_DIR +
                 "/LaneAnalyzer.rb fcname=" + @fcName + " queue=normal " +
-                "lanebarcode=" 
+                " lanebarcode=" 
 
     laneBarcodes = AnalysisInfo.getBarcodeList(@baseCallsDir + "/FCDefinition.xml")
    
