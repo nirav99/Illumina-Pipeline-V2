@@ -1,12 +1,14 @@
 #!/usr/bin/ruby
 
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
+$:.unshift File.dirname(__FILE__)
 
 require 'PipelineHelper'
 require 'rexml/document'
 require 'rexml/formatters/pretty'
 include REXML
 require 'EmailHelper'
+require 'PathInfo'
 
 # Class to parse LIMS output to obtain information for specified lane barcode
 # Author Nirav Shah niravs@bcm.edu
@@ -183,8 +185,7 @@ class FlowcellDefinitionBuilder
 
   # Get name of each lane / lane barcode used in the flowcell 
   def getLaneBarcodeDefn()
-    limsScript = File.dirname(File.expand_path(File.dirname(__FILE__))) +
-                 "/lims_api/getFlowCellInfo.pl"
+    limsScript = PathInfo::LIMS_API_DIR + "/getFlowCellInfo.pl"
 
     limsQueryCmd = "perl " + limsScript + " " + @fcName.to_s
 
@@ -201,8 +202,7 @@ class FlowcellDefinitionBuilder
   # Obtain the data for each lane / lane barcode such as sample name, library,
   # reference path, chip design etc
   def getLaneBarcodeInfo()
-    limsScript = File.dirname(File.expand_path(File.dirname(__FILE__))) + 
-                 "/lims_api/getAnalysisPreData.pl"
+    limsScript = PathInfo::LIMS_API_DIR + "/getAnalysisPreData.pl"
 
     @laneBarcodes.each do |laneBC|
       limsQueryCmd = "perl " + limsScript + " " + @fcName.to_s + "-" + laneBC.to_s
