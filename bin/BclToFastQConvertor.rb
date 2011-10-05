@@ -3,6 +3,7 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
 require 'EmailHelper'
 require 'Scheduler'
+require 'SchedulerInfo'
 require 'yaml'
 require 'PipelineHelper'
 require 'AnalysisInfo'
@@ -66,7 +67,7 @@ class BclToFastQConvertor
 
     yamlConfigFile     = PathInfo::CONFIG_DIR + "/config_params.yml" 
     @configReader      = YAML.load_file(yamlConfigFile)
-    @queue             = "high" # The processing queue on the cluster
+    @queue             = SchedulerInfo::CASAVA_QUEUE # The processing queue on the cluster
   end
 
 
@@ -101,7 +102,7 @@ class BclToFastQConvertor
   def runMake()
     puts "Running make to generate Fastq files"
 
-    numCores = @configReader["scheduler"]["queue"]["high"]["maxCores"]
+    numCores = @configReader["scheduler"]["queue"][SchedulerInfo::CASAVA_QUEUE]["maxCores"]
     cmd      = "make -j" + numCores.to_s
 
     s = Scheduler.new(@fcName + "_BclToFastQ", cmd)
@@ -118,8 +119,8 @@ class BclToFastQConvertor
   # build sequence files for each lane barcode and perform the alignment.
   def runLaneBarcodes()
     cmdPrefix = "ruby " + PathInfo::BIN_DIR +
-                "/LaneAnalyzer.rb fcname=" + @fcName + " queue=normal " +
-                " lanebarcode=" 
+                "/LaneAnalyzer.rb fcname=" + @fcName + " queue=" +
+                SchedulerInfo::DEFAULT_QUEUE + " lanebarcode=" 
 
     laneBarcodes = AnalysisInfo.getBarcodeList(@baseCallsDir + "/FCDefinition.xml")
    

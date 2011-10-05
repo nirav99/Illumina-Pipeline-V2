@@ -5,6 +5,7 @@ $:.unshift File.dirname(__FILE__)
 
 require 'yaml'
 require 'PathInfo'
+require 'SchedulerInfo'
 
 # Class to encapsulate commands to scheduler (MOAB for now)
 
@@ -16,7 +17,7 @@ class Scheduler
     @numCores  = 1                 # Default to 1 CPU core
     @stdoutLog = @jobPrefix + ".o" # Default to job name prefix + ".o"
     @stderrLog = @jobPrefix + ".e"
-    @priority  = "normal"          # Default to normal queue
+    @priority  = SchedulerInfo::DEFAULT_QUEUE
     @depList   = Array.new         # Dependency list
     @jobName   = ""
     @jobID     = ""
@@ -142,7 +143,7 @@ class Scheduler
   @stdoutLog = "" # File name for output from the job
   @stderrLog = "" # File name for stderr from the job
   @depList   = "" # Dependency list
-  @priority  = "" # Priority of job (normal, high etc)
+  @priority  = "" # Priority of job (scheduler queue name)
   @jobName   = "" # Complete name of the job
   @jobID     = "" # (LSF) ID of the job
   @cmd       = "" # Command for the scheduler

@@ -5,6 +5,7 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 require 'Scheduler'
 require 'BWAParams'
 require 'PathInfo'
+require 'SchedulerInfo'
 
 #Commands to run after sequence generation is complete.
 #Author: Nirav Shah niravs@bcm.edu
@@ -25,7 +26,7 @@ seqAnalyzerCmd = "ruby " + PathInfo::WRAPPER_DIR + "/SequenceAnalyzerWrapper.rb"
 sch1 = Scheduler.new(fcBarcode + "_SequenceAnalysis", seqAnalyzerCmd)
 sch1.setMemory(8000)
 sch1.setNodeCores(1)
-sch1.setPriority("normal")
+sch1.setPriority(SchedulerInfo::DEFAULT_QUEUE)
 sch1.runCommand()
 uniqJobName = sch1.getJobName()
 

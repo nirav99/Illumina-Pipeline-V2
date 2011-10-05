@@ -7,6 +7,7 @@ require 'BWAParams'
 require 'PipelineHelper'
 require 'yaml'
 require 'PathInfo'
+require 'SchedulerInfo'
 
 class Aligner
   # Constructor - prepare the context
@@ -143,7 +144,7 @@ class Aligner
     elsif @fcBarcode == nil || @fcBarcode.empty?()
       raise "Flowcell barcode must be specified in config file"
     elsif @queueName == nil || @queueName.empty?()
-      @queueName = "normal"
+      @queueName = SchedulerInfo::DEFAULT_QUEUE
     end
 
     # Create file names for subsequent stages

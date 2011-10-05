@@ -8,6 +8,7 @@ require 'BWAParams'
 require 'AnalysisInfo'
 require 'Scheduler'
 require 'PathInfo'
+require 'SchedulerInfo'
 
 # Class to start the analysis for a specific lane barcode of a given flowcell
 # Author: Nirav Shah niravs@bcm.edu
@@ -31,8 +32,8 @@ class LaneAnalyzer
     @laneBarcode  = nil      # Lane barcode
     @fcBarcode    = nil      # Flowcell barcode name (limsFCName-LaneBarcode)
     @analysisDir  = nil      # Analysis directory path
-    @queueName    = "normal" # Scheduler queue
     @analysisInfo = nil      # Object having analysis parameters
+    @queueName    = SchedulerInfo::DEFAULT_QUEUE  # Scheduler queue
   end
 
   # Parse command line parameters
@@ -69,7 +70,7 @@ class LaneAnalyzer
     puts "fcname      - Full flowcell name"
     puts "lanebarcode - Lane barcode, format : Lane-BarcodeName"
     puts "              e.g. 1-ID01"
-    puts "queue       - Scheduler queue. Optional. Default value: normal"
+    puts "queue       - Scheduler queue. Optional."
   end
 
   # Method to find the directory where the Fastq files for the given sequencing

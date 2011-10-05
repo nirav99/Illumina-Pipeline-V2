@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+$:.unshift File.dirname(__FILE__)
+
 # Class representing parameters to be passed to the alignment part of the
 # pipeline.
 # Author: Nirav Shah niravs@bcm.edu
@@ -11,7 +13,6 @@ class BWAParams
     @filterPhix     = false    # Don't filter phix reads
     @chipDesign     = nil      # Name of chip design
     @sampleName     = nil      # Sample name
-    @schedulingQ    = "normal" # Scheduler queue to use - high, normal
     @rgPUField      = nil      # PU field of RG tag (rundate_machine-name_FCbarcode)
     @fcBarcode      = nil      # Flowcell barcode
     @baseQualFormat = nil      # Base quality format in sequence files
@@ -19,6 +20,9 @@ class BWAParams
 
     # Name of config file
     @configFile = "BWAConfigParams.txt"
+
+    # Name of default scheduling queue
+    @schedulingQ    = SchedulerInfo::DEFAULT_QUEUE
   end
 
   def getReferencePath()
@@ -159,7 +163,7 @@ class BWAParams
     @referencePath  = nil
     @chipDesign     = nil
     @sampleName     = nil
-    @schedulingQ    = "normal"
+    @schedulingQ    = SchedulerInfo::DEFAULT_QUEUE
     @rgPUField      = nil
     @fcBarcode      = nil
     @baseQualFormat = nil
