@@ -2,6 +2,8 @@
 
 $:.unshift File.dirname(__FILE__)
 
+require 'SchedulerInfo'
+
 # Class representing parameters to be passed to the alignment part of the
 # pipeline.
 # Author: Nirav Shah niravs@bcm.edu
