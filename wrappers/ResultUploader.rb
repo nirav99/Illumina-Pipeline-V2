@@ -48,11 +48,20 @@ class LaneResult
   def getLIMSUploadString()
     if @resultStage.eql?("SEQUENCE_FINISHED")
       result = @fcBarcode + " SEQUENCE_FINISHED " +  
-               "READ " + @readType.to_s + " PERCENT_PHASING " + @phasing.to_s + 
-               " PERCENT_PREPHASING " + @prePhasing.to_s + " LANE_YIELD_KBASES " +
-               @yield.to_s + " PERCENT_PF_CLUSTERS " + @percentPFClusters.to_s +
+               " READ " + @readType.to_s + " PERCENT_PHASING " + @phasing.to_s + 
+               " PERCENT_PREPHASING " + @prePhasing.to_s + 
+               " PERCENT_PF_READS " + @percentPFReads.to_s +
                " FIRST_CYCLE_INT_PF " + @firstCycleInt.to_s + 
                " PERCENT_INTENSITY_AFTER_20_CYCLES_PF " + @percentIntAfter20.to_s
+
+      if @readType.to_s.eql?("1")
+        result = result + " LANE_YIELD_MBASES " + @yield.to_s + " RAW_READS " +
+                 @numRawReads.to_s + " PF_READS	" + @numPFReads.to_s +
+                 " PERCENT_PERFECT_INDEX " + @percentPerfectIndex.to_s + 
+                 " PERCENT_1MISMATCH_INDEX " + @percent1MismatchIndex.to_s +
+                 " PERCENT_Q30_BASES " + @percentQ30Bases.to_s +
+                 " MEAN_QUAL_SCORE " + @meanQualScore.to_s
+      end
     else
       result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
                " PERCENT_ALIGN_PF " + @percentAligned.to_s + 
@@ -67,15 +76,21 @@ class LaneResult
 
   # Put default values for results to upload to LIMS
   def initializeDefaultParameters()
-    @phasing           = 0
-    @prePhasing        = 0
-    @yield             = 0
-    @percentPFClusters = 0
-    @referencePath     = ""
-    @percentAligned    = 0
-    @percentError      = 100
-    @firstCycleInt     = 0    # First cycle intensity
-    @percentIntAfter20 = 0    # Percent intensity after 20 cycles
+    @phasing               = 0
+    @prePhasing            = 0
+    @yield                 = 0
+    @percentPFReads        = 0 # Percentage of purity filtered reads
+    @numRawReads           = 0 # Number of raw reads
+    @numPFReads            = 0 # Number of purity filtered reads
+    @referencePath         = ""
+    @percentAligned        = 0
+    @percentError          = 100
+    @firstCycleInt         = 0 # First cycle intensity
+    @percentIntAfter20     = 0 # Percent intensity after 20 cycles
+    @percentPerfectIndex   = 0 # Percent of index reads matching perfectly
+    @percent1MismatchIndex = 0 # Percentage of index reads with 1 mismatch
+    @percentQ30Bases       = 0 # Percentage of bases with Q30 or higher
+    @meanQualScore         = 0 # Mean quality score
   end
 
   # Read DemultiplexedBustardSummary.xml file and obtain values of phasing,
@@ -127,7 +142,8 @@ class LaneResult
 
 
   # Read Demultiplex_Stats.htm file and get values of yield, percent PF clusters
-  # and raw clusters (TODO)
+  # , raw clusters, percentage of reads with no mismatch, one mismatch, mean
+  # qual score and percentage of Q30 bases.
   def getYieldAndClusterInfo(demuxStatsHTM)
     doc = open(demuxStatsHTM) { |f| Hpricot(f) }
 
@@ -138,14 +154,16 @@ class LaneResult
       dataElements = (row/"td")
 
       if dataElements[1].inner_html.eql?(@fcBarcode)
-        # Convert yield from MBases to KBases and remove all comma characters
-        @yield = dataElements[7].inner_html.gsub(",", "").to_i * 1000
+        @yield = dataElements[7].inner_html.gsub(",", "")
 
-        if @isPaired == true
-          @yield = @yield / 2
-        end
-
-        @percentPFClusters = dataElements[8].inner_html
+        @percentPFReads = dataElements[8].inner_html
+        @numRawReads    = dataElements[9].inner_html.gsub(/,/, "")
+        @numPFReads = (@numRawReads.to_f / 100.0) * @percentPFReads.to_f 
+        @percentPFReads        = dataElements[8].inner_html
+        @percentPerfectIndex   = dataElements[11].inner_html
+        @percent1MismatchIndex = dataElements[12].inner_html
+        @percentQ30Bases       = dataElements[13].inner_html
+        @meanQualScore         = dataElements[14].inner_html
       end
     end
   end
