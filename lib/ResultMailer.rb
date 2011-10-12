@@ -34,9 +34,9 @@ class ResultMailer
     to = obj.getResultRecepientEmailList()
 
     if @attachments != nil && @attachments.length > 0
-      obj.sendEmailWithAttachment(from, to, @emailSubject, @emailText, @attachments)
+      obj.sendEmailWithAttachment(from, to, @emailSubject, @emailText.join(""), @attachments)
     else
-      obj.sendEmail(from, to, @emailSubject, @emailText)
+      obj.sendEmail(from, to, @emailSubject, @emailText.join(""))
     end
   end
 

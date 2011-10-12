@@ -38,8 +38,8 @@ class LaneAnalyzer
 
   # Parse command line parameters
   def parseCommandString(cmdParams)
-
-    cmdParams.each do |line|
+    cmdParams.each do |entry|
+      line = entry.dup
       line.strip!
       if line.match(/fcname=/)
         @fcName = line.gsub(/fcname=/,"") 

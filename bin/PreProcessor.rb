@@ -55,7 +55,8 @@ class PreProcessor
   private
   # Parse the command string and validate the command line arguments
   def parseCommandString(cmdParams)
-    cmdParams.each do |line|
+    cmdParams.each do |entry|
+      line = entry.dup
       line.strip!
       if line.match(/fcname=/)
         @fcName = line.gsub(/fcname=/,"")      

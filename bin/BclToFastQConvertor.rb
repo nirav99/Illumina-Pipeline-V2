@@ -43,7 +43,8 @@ class BclToFastQConvertor
 
   # Method to parse the command line string and validate it
   def parseCommandString(cmdParams)
-    cmdParams.each do |line|
+    cmdParams.each do |entry|
+      line = entry.dup
       line.strip!
       if line.match(/fcname=/)
         @fcName = line.gsub(/fcname=/,"")      
