@@ -18,8 +18,9 @@ class MergeHelper
   # Class constructor
   # inputList - Array of directory paths of BAMs
   # outputDirectory - where to drop the final merged bam
-  def initialize(inputList, outputDirectory)
+  def initialize(sampleName, inputList, outputDirectory)
     begin
+      @sampleName = sampleName
       initializeDefaultParams()
       findBAMsToMerge(inputList)
       validateOutputLocation(outputDirectory)
@@ -48,7 +49,6 @@ class MergeHelper
 
   def initializeDefaultParams()
     @bamsToMerge  = Array.new
-    @finalBAMName = "final.bam" # TODO: This needs to change.
   end
 
 
@@ -113,8 +113,11 @@ class MergeHelper
 
   # Start the merge process
   def process()
-    mergedBamName = "merged.bam"
-    finalBamName  = "final.bam"   # TODO: needs change
+    mergedBamName = @sampleName + "_merged.bam"
+    finalBamName  = @sampleName + "_final.bam"   # TODO: needs change
+
+    puts "Merged Bam : " + mergedBamName
+    puts "final Bam  : " + finalBamName
 
     mergeCmd = buildMergeCommand(mergedBamName)
     runCommand(mergeCmd, "MergeCmd")
@@ -124,13 +127,15 @@ class MergeHelper
 
     bamAnalyzerCmd = buildBamAnalyzerCommand(finalBamName)
     runCommand(bamAnalyzerCmd, "BAMAnalyzerCmd")
+
+    File::delete(mergedBamName)
   end
 
   # Build the command to merge BAMs
   def buildMergeCommand(outFileName)
     outLog    = @outDir + "/mergeLog.o"
     errLog    = @outDir + "/mergeLog.e"
-    mergedBam = @outDir + "/merged.bam"
+    mergedBam = @outDir + "/" + outFileName 
 
     cmd = "java " + @heapSize + " -jar " + @picardPath + "/MergeSamFiles.jar "
 
@@ -146,6 +151,7 @@ class MergeHelper
 
   # Mark duplicates on a sorted BAM
   def buildMarkDupCommand(input, outFileName)
+    puts "Mark Dup : Input : " + input + " Output : " + outFileName
     outLog    = @outDir + "/markDups.o"
     errLog    = @outDir + "/markDups.e"
     markedBam = @outDir + "/" + outFileName
@@ -202,3 +208,6 @@ class MergeHelper
     exit -1
   end
 end
+
+
+
