@@ -304,7 +304,6 @@ class ResultUploader
   # Upload the results to LIMS and check for errors
   def executeUploadCmd(cmd)
     puts "Executing command : " + cmd
-    return
     output = `#{cmd}`
     exitStatus = $?
     output.downcase!
