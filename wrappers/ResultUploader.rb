@@ -147,7 +147,7 @@ class LaneResult
   def getYieldAndClusterInfo(demuxStatsHTM)
     doc = open(demuxStatsHTM) { |f| Hpricot(f) }
 
-    table = (doc/"/html/body/div[@ID='ScrollableTableBodyDiv']").first
+    table = (doc/"/html/body/div[@id='ScrollableTableBodyDiv']/table")
 
     rows = (table/"tr")
     rows.each do |row|
@@ -155,7 +155,6 @@ class LaneResult
 
       if dataElements[1].inner_html.eql?(@fcBarcode)
         @yield = dataElements[7].inner_html.gsub(",", "")
-
         @percentPFReads = dataElements[8].inner_html
         @numRawReads    = dataElements[9].inner_html.gsub(/,/, "")
         @numPFReads = (@numRawReads.to_f / 100.0) * @percentPFReads.to_f 
