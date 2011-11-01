@@ -16,7 +16,7 @@ class PipelineHelper
   # Method to take a complete fc name and return the portion used for
   # interacting with LIMS
   def self.formatFlowcellNameForLIMS(fcName)
-    limsFCName = fcName.slice(/([a-zA-Z0-9]+)$/)
+    limsFCName = fcName.slice(/([a-zA-Z0-9-]+)$/)
 
     if limsFCName.match(/^FC/)
       limsFCName.gsub!(/^FC/, "")
