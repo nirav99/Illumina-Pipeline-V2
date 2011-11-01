@@ -148,6 +148,7 @@ end
 class FlowcellDefinitionBuilder
   def initialize(fcName, outputDirectory)
     @fcName     = extractFCNameForLIMS(fcName)
+
     outFile    = "FCDefinition.xml"
 
     @laneBarcodes    = Array.new  # Lane barcodes for the given flowcell
@@ -194,8 +195,13 @@ class FlowcellDefinitionBuilder
     # LIMS did not report any errors, proceed to parse the barcodes
     lines = output.split("\n")
     lines.each do |line|
-      line.gsub!(/^[A-Za-z0-9_]+-/, "")
-      @laneBarcodes << line.to_s
+      if line.match(/-\d-ID\d\d$/)
+         @laneBarcodes << line.slice(/\d-ID\d\d$/)
+      elsif line.match(/-\d-IDMB\d$/)
+         @laneBarcodes << line.slice(/\d-IDMB\d$/)
+      elsif line.match(/-\d-IDMB\d\d$/)
+         @laneBarcodes << line.slice(/\d-IDMB\d\d$/)
+      end
     end
   end
 
