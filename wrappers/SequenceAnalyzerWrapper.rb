@@ -2,7 +2,7 @@
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
 require 'PipelineHelper'
-require 'EmailHelper'
+require 'ErrorHandler'
 require 'BWAParams'
 require 'rubygems'
 require 'hpricot'
@@ -103,7 +103,8 @@ class SequenceAnalyzerWrapper
     limsScript = PathInfo::LIMS_API_DIR + "/setIlluminaLaneStatus.pl"
 
     limsUploadCmd = "perl " + limsScript + " " + @fcBarcode + 
-                    " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s
+                    " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s +
+                    " PIPELINE_VERSION casava1.8"
     puts limsUploadCmd
     return
     output = `#{limsUploadCmd}`
@@ -114,26 +115,14 @@ class SequenceAnalyzerWrapper
   def handleError(errorMsg)
     $stderr.puts "Error encountered : " + errorMsg
     $stderr.puts "Current directory : " + Dir.pwd
-    emailErrorMessage(errorMsg)
+
+    obj            = ErrorMessage.new()
+    obj.fcBarcode  = @fcBarcode.to_s
+    obj.workingDir = Dir.pwd
+    obj.msgDetail  = errorMsg.to_s
+    obj.msgBrief   = "Error while running SequenceAnalyzer for " + @fcBarcode.to_s
+    ErrorHandler.handleError(obj)
     exit -1
-  end
-
-   # Send email describing the error message to interested watchers
-  def emailErrorMessage(msg)
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    
-    if @fcBarcode != nil
-      emailSubject = "Error while running sequence analysis for : " + @fcBarcode
-    else
-      emailSubject = "Error while running sequence analysis"
-    end
-
-    emailText    = "The error is : " + msg.to_s + "\r\nWorking Directory : " +
-                   Dir.pwd
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, emailText)
   end
 end
 
