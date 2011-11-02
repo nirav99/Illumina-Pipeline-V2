@@ -52,7 +52,8 @@ class LaneResult
                " PERCENT_PREPHASING " + @prePhasing.to_s + 
                " PERCENT_PF_READS " + @percentPFReads.to_s +
                " FIRST_CYCLE_INT_PF " + @firstCycleInt.to_s + 
-               " PERCENT_INTENSITY_AFTER_20_CYCLES_PF " + @percentIntAfter20.to_s
+               " PERCENT_INTENSITY_AFTER_20_CYCLES_PF " + @percentIntAfter20.to_s +
+               " PIPELINE_VERSION casava1.8"
 
       if @readType.to_s.eql?("1")
         result = result + " LANE_YIELD_MBASES " + @yield.to_s + " RAW_READS " +
@@ -60,8 +61,7 @@ class LaneResult
                  " PERCENT_PERFECT_INDEX " + @percentPerfectIndex.to_s + 
                  " PERCENT_1MISMATCH_INDEX " + @percent1MismatchIndex.to_s +
                  " PERCENT_Q30_BASES " + @percentQ30Bases.to_s +
-                 " MEAN_QUAL_SCORE " + @meanQualScore.to_s +
-                 " PIPELINE_VERSION casava1.8"
+                 " MEAN_QUAL_SCORE " + @meanQualScore.to_s
       end
     else
       result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
