@@ -5,7 +5,7 @@ require 'rubygems'
 require 'hpricot'
 require 'fileutils'
 require 'PipelineHelper'
-require 'EmailHelper'
+require 'ErrorHandler'
 require 'BWAParams'
 require 'PathInfo'
 
@@ -60,14 +60,17 @@ class LaneResult
                  " PERCENT_PERFECT_INDEX " + @percentPerfectIndex.to_s + 
                  " PERCENT_1MISMATCH_INDEX " + @percent1MismatchIndex.to_s +
                  " PERCENT_Q30_BASES " + @percentQ30Bases.to_s +
-                 " MEAN_QUAL_SCORE " + @meanQualScore.to_s
+                 " MEAN_QUAL_SCORE " + @meanQualScore.to_s +
+                 " PIPELINE_VERSION casava1.8"
       end
     else
       result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
                " PERCENT_ALIGN_PF " + @percentAligned.to_s + 
                " PERCENT_ERROR_RATE_PF " + @percentError.to_s +
                " REFERENCE_PATH " + @referencePath +
-               " RESULTS_PATH " + FileUtils.pwd 
+               " RESULTS_PATH " + FileUtils.pwd  +
+               " PIPELINE_VERSION casava1.8"
+
     end
     return result
   end
@@ -146,8 +149,7 @@ class LaneResult
   # qual score and percentage of Q30 bases.
   def getYieldAndClusterInfo(demuxStatsHTM)
     doc = open(demuxStatsHTM) { |f| Hpricot(f) }
-
-    table = (doc/"/html/body/div[@id='ScrollableTableBodyDiv']/table")
+    table = (doc/"/html/body/div[@ID='ScrollableTableBodyDiv']/table")
 
     rows = (table/"tr")
     rows.each do |row|
@@ -322,16 +324,12 @@ class ResultUploader
 
   # Handle error and abort.
   def handleError(msg)
-    errorMessage = "Error while uploading sequence results to LIMS. Working Dir : " +
-                    Dir.pwd + " Message : " + msg.to_s
-
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    emailSubject = "Error while uploading sequence results to LIMS" 
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, errorMessage)
-    puts errorMessage.to_s
+    obj            = ErrorMessage.new()
+    obj.msgDetail  = "LIMS upload error. Error message : " + msg.to_s
+    obj.msgBrief   = "LIMS upload error for : " + @fcBarcode.to_s
+    obj.fcBarcode  = @fcBarcode.to_s
+    obj.workingDir = Dir.pwd
+    ErrorHandler.handleError(obj)
     exit -1
   end
 end
