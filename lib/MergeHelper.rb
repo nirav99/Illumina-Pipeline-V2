@@ -9,7 +9,7 @@ require 'yaml'
 require 'PathInfo'
 require 'SchedulerInfo'
 require 'EnvironmentInfo'
-require 'EmailHelper'
+require 'ErrorHandler'
 
 # Class to merge BAMs and write the merged bam in the specfied location
 # Author: Nirav Shah niravs@bcm.edu
@@ -194,20 +194,12 @@ class MergeHelper
 
   # Inform the user if an error occurs and abort
   def handleError(commandName)
-    errorMessage = " Error while processing command : " + commandName.to_s +
-                   " Working Dir : " + Dir.pwd.to_s + 
-                   " Hostname : " + EnvironmentInfo.getHostName() 
+    err = ErrorMessage.new
+    err.workingDir = Dir.pwd
+    err.hostName   = EnvironmentInfo.getHostName()
+    err.msgBrief   = "Error while merging BAMs"
+    err.msgDetail  = "Error while processing command : " + commandName.to_s
 
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    emailSubject = "Error " 
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, errorMessage)
-    puts errorMessage.to_s
-    exit -1
+    ErrorHandler.handleError(err)
   end
 end
-
-
-

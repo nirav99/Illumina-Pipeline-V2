@@ -4,7 +4,6 @@ $:.unshift File.dirname(__FILE__)
 
 require 'zlib'
 require 'Scheduler'
-require 'EmailHelper'
 require 'PipelineHelper'
 
 # Class to build final fastq files for use with BWA. It removes reads that do

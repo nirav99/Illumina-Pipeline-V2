@@ -1,13 +1,13 @@
 #!/usr/bin/ruby
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
-require 'EmailHelper'
 require 'Scheduler'
 require 'SchedulerInfo'
 require 'yaml'
 require 'PipelineHelper'
 require 'AnalysisInfo'
 require 'PathInfo'
+require 'ErrorHandler'
 
 # Class to create the analysis directory and convert BCL files to Fastq files.
 # Author: Nirav Shah niravs@bcm.edu
@@ -24,7 +24,7 @@ class BclToFastQConvertor
       $stderr.puts "Exception occurred in BclToFastQConvertor for flowcell : " + @fcName.to_s
       $stderr.puts e.message
       $stderr.puts e.backtrace.inspect
-      emailErrorMessage(e.message)
+      handleError(e.message)
       exit -1
     end
   end
@@ -163,15 +163,15 @@ class BclToFastQConvertor
     puts "                 acceptable."
  end
 
-  # Send email describing the error message to interested watchers
-  def emailErrorMessage(msg)
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    emailSubject = "Error while converting bcl to Fastq for flowcell " + @fcName + " for analysis" 
-    emailText    = "The error is : " + msg.to_s
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, emailText)
+  # Invoke error handler and let it perform suitable action
+  def handleError(msg)
+    obj            = ErrorMessage.new()
+    obj.msgDetail  = msg
+    obj.msgBrief   = "Error in BCL to Fastq conversion for flowcell : " +
+                     @fcName.to_s
+    obj.workingDir = Dir.pwd
+    ErrorHandler.handleError(obj)
+    exit -1
   end
 end
 

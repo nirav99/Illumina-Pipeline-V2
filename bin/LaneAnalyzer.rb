@@ -2,13 +2,13 @@
 
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
-require 'EmailHelper'
 require 'PipelineHelper'
 require 'BWAParams'
 require 'AnalysisInfo'
 require 'Scheduler'
 require 'PathInfo'
 require 'SchedulerInfo'
+require 'ErrorHandler'
 
 # Class to start the analysis for a specific lane barcode of a given flowcell
 # Author: Nirav Shah niravs@bcm.edu
@@ -180,15 +180,15 @@ class LaneAnalyzer
      return puField.to_s
   end
 
-  # Send email describing the error message to interested watchers
-  def emailErrorMessage(msg)
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    emailSubject = "Error in running analysis for  " + @fcBarcode 
-    emailText    = "The error is : " + msg.to_s
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, emailText)
+  # Invoke error handler to get the error handled suitably
+  def handleError(msg)
+    obj            = ErrorMessage.new()
+    obj.msgDetail  = msg
+    obj.msgBrief   = "Error in starting analysis for " + @fcBarcode.to_s
+    obj.workingDir = Dir.pwd
+    obj.fcBarcode  = @fcBarcode.to_s
+    ErrorHandler.handleError(obj)
+    exit -1
   end
 end
 

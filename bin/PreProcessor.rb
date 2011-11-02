@@ -2,7 +2,7 @@
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
 require 'FlowcellDefinitionBuilder'
-require 'EmailHelper'
+require 'ErrorHanlder'
 require 'AnalysisInfo'
 require 'BarcodeDefinitionBuilder'
 require 'PathInfo'
@@ -47,7 +47,7 @@ class PreProcessor
       $stderr.puts "Exception occurred while pre-processing flowcell : " + @fcName.to_s
       $stderr.puts e.message
       $stderr.puts e.backtrace.inspect
-      emailErrorMessage(e.message)
+      handleError(e.message)
       exit -1
     end
   end
@@ -200,15 +200,14 @@ class PreProcessor
     puts "       pipeline manually."
  end
 
-  # Send email describing the error message to interested watchers
-  def emailErrorMessage(msg)
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    emailSubject = "Error in pre-processing flowcell " + @fcName + " for analysis" 
-    emailText    = "The error is : " + msg.to_s
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, emailText)
+  # Handle the error and perform appropriate action.
+  def handleError(msg)
+    obj            = ErrorMessage.new()
+    obj.msgDetail  = msg
+    obj.msgBrief   = "Error in pre-processing flowcell " + @fcName.to_s
+    obj.workingDir = Dir.pwd
+    ErrorHandler.handleError(obj)
+    exit -1
   end
 end
 

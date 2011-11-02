@@ -7,7 +7,7 @@ require 'PipelineHelper'
 require 'rexml/document'
 require 'rexml/formatters/pretty'
 include REXML
-require 'EmailHelper'
+require 'ErrorHandler'
 require 'PathInfo'
 
 # Class to parse LIMS output to obtain information for specified lane barcode
@@ -274,16 +274,15 @@ class FlowcellDefinitionBuilder
     outputXML.close()
   end
 
-  # In case of errors, send out email and exit
-  def handleError(errorMsg)
-    errorMessage = "Error while obtaining information from LIMS for flowcell : " +
-                   @fcName + " Error message : " + errorMsg.to_s
-    obj       = EmailHelper.new
-    emailFrom = "sol-pipe@bcm.edu"
-    emailTo   = obj.getErrorRecepientEmailList()
-    emailSubject = "LIMS error while getting info for flowcell : " + @fcName.to_s
-    obj.sendEmail(emailFrom, emailTo, emailSubject, errorMessage)
-    puts errorMessage.to_s
+  
+  # Handle the error and perform appropriate action.
+  def handleError(msg)
+    obj            = ErrorMessage.new()
+    obj.msgDetail  = "Error while obtaining information from LIMS for flowcell : " +
+                     @fcName + " Error message : " + msg.to_s
+    obj.msgBrief   = "Error in obtaining flowcell plan for : "+ @fcName.to_s
+    obj.workingDir = Dir.pwd
+    ErrorHandler.handleError(obj)
     exit -1
   end
 end

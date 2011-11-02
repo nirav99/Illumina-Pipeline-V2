@@ -2,7 +2,7 @@
 
 $:.unshift File.dirname(__FILE__)
 
-require 'EmailHelper'
+require 'ErrorHandler'
 require 'EnvironmentInfo'
 require 'yaml'
 require 'PathInfo'
@@ -153,17 +153,13 @@ class AlignerHelper
 
    # Method to handle error. Current behavior, print the error stage and abort.
   def handleError(commandName)
-    errorMessage = "Error while processing command : " + commandName.to_s +
-                   " for flowcell : " + @fcBarcode.to_s + " Working Dir : " +
-                   Dir.pwd.to_s + " Hostname : " +  EnvironmentInfo.getHostName() 
-
-    obj          = EmailHelper.new()
-    emailFrom    = "sol-pipe@bcm.edu"
-    emailTo      = obj.getErrorRecepientEmailList()
-    emailSubject = "Mapping error for lane barcode " + @fcBarcode.to_s 
-
-    obj.sendEmail(emailFrom, emailTo, emailSubject, errorMessage)
-    puts errorMessage.to_s
+    obj            = ErrorMessage.new()
+    obj.msgDetail  = "Error while processing command : " + commandName.to_s
+    obj.msgBrief   = "Error during alignment for flowcell : " + @fcBarcode.to_s
+    obj.fcBarcode  = @fcBarcode.to_s
+    obj.workingDir = Dir.pwd
+    obj.hostName   = EnvironmentInfo.getHostName()
+    ErrorHandler.handleError(obj)
     exit -1
   end
 end
