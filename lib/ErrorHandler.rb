@@ -42,7 +42,6 @@ class ErrorHandler
     end
 
     obj.sendEmail(emailFrom, emailTo, msg.msgBrief, emailBody)
-    exit -1
   end
 end
 

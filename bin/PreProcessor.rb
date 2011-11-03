@@ -2,7 +2,7 @@
 $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 
 require 'FlowcellDefinitionBuilder'
-require 'ErrorHanlder'
+require 'ErrorHandler'
 require 'AnalysisInfo'
 require 'BarcodeDefinitionBuilder'
 require 'PathInfo'
