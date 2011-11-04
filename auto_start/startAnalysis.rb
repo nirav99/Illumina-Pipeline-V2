@@ -144,6 +144,7 @@ private
   # will allow this flowcell to be picked up in the next iteration of cron job
   def fcReady?(fcName)
     fcDir = @instrDir + "/" + fcName
+    puts "FCDir : " + fcDir.to_s
     if File::exist?(fcDir + "/.rsync_finished")
       return true
     end
@@ -158,22 +159,26 @@ private
     if File::exist?(fcDir + "/RTAComplete.txt")
       cmd = "touch " + @instrDir + "/" + fcName + "/.rsync_finished"
       `#{cmd}`
-    elsif PipelineHelper.findRTAVersion(fcName).match(/1\.9/)
-       puts "Flowcell with RTA version 1.9 found : " + fcName
+    else
+       rtaVersion = PipelineHelper.findRTAVersion(fcName) 
 
-       if File::exist?(fcDir + "/Basecalling_Netcopy_complete.txt") &&
-          File::exist?(fcDir + "/Basecalling_Netcopy_complete_READ1.txt") &&
-          File::exist?(fcDir + "/Basecalling_Netcopy_complete_READ2.txt") 
+       if rtaVersion != nil && rtaVersion.match(/1\.9/)
+         puts "Flowcell with RTA version 1.9 found : " + fcName
+
+         if File::exist?(fcDir + "/Basecalling_Netcopy_complete.txt") &&
+            File::exist?(fcDir + "/Basecalling_Netcopy_complete_READ1.txt") &&
+            File::exist?(fcDir + "/Basecalling_Netcopy_complete_READ2.txt") 
  
-          modificationTime = Time.now - File::mtime(fcDir + "/Basecalling_Netcopy_complete.txt")
-          puts "Mod time : " + modificationTime.to_s
-          if modificationTime >= 3600
-            return true
-          else
-            return false
-          end
-       else
-          return false
+            modificationTime = Time.now - File::mtime(fcDir + "/Basecalling_Netcopy_complete.txt")
+            puts "Mod time : " + modificationTime.to_s
+            if modificationTime >= 3600
+              return true
+            else
+              return false
+            end
+         else
+           return false
+         end
        end
     end
     return false
@@ -196,10 +201,10 @@ private
     Dir::chdir(PathInfo::BIN_DIR)
     cmd = "ruby PreProcessor.rb  fcname=" + fcName.to_s + " action=all"
     puts "Running command : " + cmd.to_s
-#=begin
+=begin
     output = `#{cmd}`
     puts output
-#=end
+=end
     Dir::chdir(currDir)
   end
 end
