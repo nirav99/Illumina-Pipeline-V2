@@ -149,9 +149,12 @@ class LaneResult
   # qual score and percentage of Q30 bases.
   def getYieldAndClusterInfo(demuxStatsHTM)
     doc = open(demuxStatsHTM) { |f| Hpricot(f) }
-    table = (doc/"/html/body/div[@ID='ScrollableTableBodyDiv']/table")
+    rows = (doc/"/html/body/div[@ID='ScrollableTableBodyDiv']/table/tr")
 
-    rows = (table/"tr")
+    if rows == nil || rows.length == 0
+      rows = (doc/"/html/body/div[@id='ScrollableTableBodyDiv']/table/tr")
+    end
+
     rows.each do |row|
       dataElements = (row/"td")
 
