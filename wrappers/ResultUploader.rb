@@ -64,13 +64,16 @@ class LaneResult
                  " MEAN_QUAL_SCORE " + @meanQualScore.to_s
       end
     else
+      # the stage is ANALYSIS_FINISHED
       result = @fcBarcode + " ANALYSIS_FINISHED READ " + @readType.to_s +
                " PERCENT_ALIGN_PF " + @percentAligned.to_s + 
                " PERCENT_ERROR_RATE_PF " + @percentError.to_s +
-               " REFERENCE_PATH " + @referencePath +
-               " RESULTS_PATH " + FileUtils.pwd  +
                " PIPELINE_VERSION casava1.8"
 
+      if @readType.to_s.eql?("1")
+        result = result + " RESULTS_PATH " + FileUtils.pwd +
+                 " REFERENCE_PATH " + @referencePath + " BAM_PATH " + getBAMPath()
+      end
     end
     return result
   end
@@ -180,6 +183,17 @@ class LaneResult
 
     if isEmptyOrNull(@referencePath)
       @referencePath = "none"
+    end
+  end
+
+  # Get complete path name of the BAM file
+  def getBAMPath()
+    bamFile = Dir["*_marked.bam"]
+
+    if bamFile == nil || bamFile.length != 1
+      return "none"
+    else
+      return Dir.pwd + "/" + bamFile[0].to_s
     end
   end
 
