@@ -30,6 +30,7 @@ class MergeHelper
       obtainPathAndResourceInfo()
     rescue Exception => e
       handleError(e.message + " " + e.backtrace.inspect)
+      exit -1
     end 
   end
 
@@ -203,3 +204,22 @@ class MergeHelper
     ErrorHandler.handleError(err)
   end
 end
+
+i = 0
+inputList = Array.new
+sample = nil
+outDir = nil
+
+ARGV.each do |arg|
+  if i == 0
+    sample = arg.dup
+  elsif i == 1
+    outDir = arg.dup
+  else
+    inputList << arg
+  end
+  i = i + 1
+end
+ 
+obj = MergeHelper.new(sample, inputList, outDir)
+obj.startMerge()

@@ -5,7 +5,6 @@ $:.unshift File.join(File.dirname(__FILE__), ".", "..", "lib")
 require 'Scheduler'
 require 'PathInfo'
 require 'SchedulerInfo'
-require 'MergeHelper'
 require 'ErrorHandler'
 
 # Class to initiate merges of BAM files
@@ -73,9 +72,25 @@ class MergeController
     end
   end
 
+  # Start the merge process by scheduling appropriate merge job on the cluster.
   def startMergeProcess()
-    mergeHelper = MergeHelper.new(@sampleName, @inputList, @outputDir)
-    mergeHelper.startMerge()
+    schedulerQueue = SchedulerInfo::DEFAULT_QUEUE
+    yamlConfigFile = PathInfo::CONFIG_DIR + "/config_params.yml" 
+    configReader = YAML.load_file(yamlConfigFile)
+
+    cmd = "ruby " + PathInfo::LIB_DIR + "/MergeHelper.rb " + @sampleName.to_s +
+          " " + @outputDir
+
+    @inputList.each do |inputDir|
+      cmd = cmd + " " + inputDir
+    end
+
+    obj = Scheduler.new("Merge_" + @sampleName.to_s, cmd)
+    obj.lockWholeNode(schedulerQueue)
+    obj.runCommand()
+    jobID = obj.getJobName()
+
+    puts "Job ID : " + jobID.to_s
   end
 
   # Print the usage
