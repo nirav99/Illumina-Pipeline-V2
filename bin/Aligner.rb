@@ -37,7 +37,7 @@ class Aligner
 
     if @zippedSequences == true
       unzipCmd = buildUnzipCommand()
-      objUnzip = Scheduler.new(@fcBarcode + "_unzip_sequences", unzipCmd1)
+      objUnzip = Scheduler.new(@fcBarcode + "_unzip_sequences", unzipCmd)
       objUnzip.setMemory(2000)
       objUnzip.setNodeCores(1)
       objUnzip.setPriority(@queueName)
@@ -208,6 +208,16 @@ class Aligner
     end
   end
 
+   # Build command to unzip sequence files
+   def buildUnzipCommand()
+    cmd = "bzip2 -d "
+
+    @sequenceFiles.each do |seqFile|
+      cmd = cmd + seqFile + " "
+    end
+    return cmd
+  end
+
   # BWA aln command - number of threads equals maxNodeCores
   def buildAlignCommand(readFile, outputFile)
     cmd = @bwaPath + " aln -t " + @maxNodeCores.to_s 
@@ -215,6 +225,7 @@ class Aligner
     if @baseQualFormat.eql?("PHRED+64")
       cmd = cmd + " -I"
     end
+#    cmd = cmd + " -k 2 -l 32"
     cmd = cmd + " " + @reference + " " + readFile + " > " + outputFile
     return cmd
   end
