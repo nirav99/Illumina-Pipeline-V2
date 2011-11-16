@@ -7,7 +7,9 @@ package limsClient;
  */
 public class AnalysisResultUploader extends LIMSClient
 {
-  private String limsPage   = "setIlluminaLaneStatus.jsp";
+  private String mappingResultPage   = "setIlluminaLaneStatus.jsp";
+  private String captureResultPage   = "setIlluminaCaptureResults.jsp";
+  
   private String newState   = null; // New state to set in LIMS
   private String fcBarcode  = null; // Flowcell barcode for which result should be set
   
@@ -15,6 +17,14 @@ public class AnalysisResultUploader extends LIMSClient
   private String[] keys   = null;
   private String[] values = null;
   
+  enum Lims_State
+  {
+    SEQUENCE_FINISHED,        // Generation of sequence files finished
+    ANALYSIS_FINISHED,        // Alignment completed
+    UNIQUE_PERCENT_FINISHED,  // Calculation of unique reads finished
+    CAPTURE_FINISHED          // Capture stats generation finished
+  }
+
   /**
    * Class constructor
    * @param dbName
@@ -23,11 +33,13 @@ public class AnalysisResultUploader extends LIMSClient
    * @param keyValPairs
    * @throws Exception
    */
-  public AnalysisResultUploader(String dbName, String newState, 
+  public AnalysisResultUploader(String dbName, String newState,
          String fcBarcode, String keyValPairs[]) throws Exception
   {
     super(dbName);
     String tokens[];
+    
+    validateNewState(newState);
     
     this.newState = newState;
     this.fcBarcode = fcBarcode;
@@ -94,12 +106,32 @@ public class AnalysisResultUploader extends LIMSClient
   }
   
   /**
+   * Method to validate that the newState is valid
+   * @param newState
+   * @return
+   */
+  private void validateNewState(String newState) throws Exception
+  {
+    System.err.println("NEW STATE = " + newState);
+    if(!newState.equals(Lims_State.ANALYSIS_FINISHED.toString()) &&
+      (!newState.equals(Lims_State.CAPTURE_FINISHED.toString())) &&
+      (!newState.equals(Lims_State.SEQUENCE_FINISHED.toString())) &&
+      (!newState.equals(Lims_State.UNIQUE_PERCENT_FINISHED.toString())))
+        throw new Exception(newState + " is an invalid value for newState");
+  }
+  /**
    * Method to build a request URL to send results to LIMS
    * @return
    */
   private String buildRequest()
   {
-    StringBuffer completeURL = new StringBuffer(limsBaseURL + "/" + limsPage + "?");
+    StringBuffer completeURL = new StringBuffer(limsBaseURL + "/");
+    
+    if(newState.equals(Lims_State.CAPTURE_FINISHED.toString())) 
+      completeURL.append(captureResultPage);
+    else
+      completeURL.append(mappingResultPage);
+    completeURL.append("?");
     completeURL.append("lane_barcode=" + fcBarcode);
     completeURL.append("&status=" + newState);
     
@@ -118,15 +150,15 @@ public class AnalysisResultUploader extends LIMSClient
   {
     System.err.println("Utility to push analysis results to LIMS");
     System.err.println();
-    System.err.println("Usage. Specify the following commannd line parameters");
+    System.err.println("Usage. Specify the following commannd line parameters :");
     System.err.println();
     System.err.println("DBName FCLaneBarcode NewState Key=value...");
     System.err.println("  DBName        : LIMS database name");
     System.err.println("  FCLaneBarcode : Flowcell Lane barcode");
     System.err.println("                  e.g. 70EMPAAXX-5-ID01");
     System.err.println("  NewState      : New result state");
-    System.err.print("                  e.g. ANALYSIS_FINISHED, SEQUENCE_FINISHED");
-    System.err.println(" UNIQUE_PERCENT_FINISHED");
+    System.err.print("                    e.g. ANALYSIS_FINISHED, SEQUENCE_FINISHED, ");
+    System.err.println("UNIQUE_PERCENT_FINISHED, CAPTURE_FINISHED");
     System.err.print("  Key=value     : Collection of key value pairs to be uploaded");
     System.err.println(" as results to LIMS");
   }

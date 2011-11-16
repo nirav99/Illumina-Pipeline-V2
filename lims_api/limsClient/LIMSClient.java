@@ -5,12 +5,6 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 
-enum Lims_Action
-{
-	GET_FLOWCELL_PLAN,
-	UPLOAD_RESULTS
-}
-
 /**
  * Class to encapsulate HTTP communication with LIMS
  * @author Nirav Shah niravs@bcm.edu
