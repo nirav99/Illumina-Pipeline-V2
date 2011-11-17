@@ -156,9 +156,9 @@ public class AnalysisResultUploader extends LIMSClient
     System.err.println("  DBName        : LIMS database name");
     System.err.println("  NewState      : New result state");
     System.err.print("                    e.g. ANALYSIS_FINISHED, SEQUENCE_FINISHED, ");
+    System.err.println("UNIQUE_PERCENT_FINISHED, CAPTURE_FINISHED");
     System.err.println("  FCLaneBarcode : Flowcell Lane barcode");
     System.err.println("                  e.g. 70EMPAAXX-5-ID01");
-    System.err.println("UNIQUE_PERCENT_FINISHED, CAPTURE_FINISHED");
     System.err.print("  Key=value     : Collection of key value pairs to be uploaded");
     System.err.println(" as results to LIMS");
   }
