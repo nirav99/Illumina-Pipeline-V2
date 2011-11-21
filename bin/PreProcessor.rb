@@ -6,6 +6,7 @@ require 'ErrorHandler'
 require 'AnalysisInfo'
 require 'BarcodeDefinitionBuilder'
 require 'PathInfo'
+require 'LimsInfo'
 
 # Class to prepare the flowcell for analysis.
 # Author: Nirav Shah niravs@bcm.edu
@@ -102,7 +103,22 @@ class PreProcessor
   # Contact LIMS and write an XML file having necessary information to start the
   # analysis. This is a temporary functionality until LIMS can provide this XML.
   def createFlowcellDefinitionXML()
-    obj = FlowcellDefinitionBuilder.new(@fcName, @baseCallsDir)
+#    obj = FlowcellDefinitionBuilder.new(@fcName, @baseCallsDir)
+
+    outputFile = @baseCallsDir + "/FCDefinition.xml"
+    outLog     = @baseCallsDir + "/fcPlanDownloader.o"
+    errLog     = @baseCallsDir + "/fcPlanDownloader.e"
+
+    cmd = "java -jar " + PathInfo::LIMS_API_DIR + "/FlowcellPlanDownloader.jar" +
+          " " + LimsInfo::LIMS_DB_NAME + " " + PipelineHelper.formatFlowcellNameForLIMS(@fcName) +
+          " " + outputFile + " 1>" + outLog + " 2>" + errLog
+    puts "Executing command to download flowcell plan"
+    output = `#{cmd}`
+    returnCode = $?
+
+    if !File::exist?(outputFile) || (returnCode != 0)
+      raise outputFile + " not created"
+    end
   end  
 
   # Helper method to upload analysis start date to LIMS for tracking purposes
