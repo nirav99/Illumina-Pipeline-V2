@@ -151,7 +151,7 @@ public class FlowcellPlanBuilder extends LIMSClient
     root.setAttribute("Name", fcName);
     root.setAttribute("Type", barcodeInfo[0].fcType);
     if(numCyclesRead1 != null)
-      root.setAttribute("Numcycles", numCyclesRead1);
+      root.setAttribute("NumCycles", numCyclesRead1);
     root.appendChild(LaneBarcodeList);
     root.appendChild(LaneBarcodeInfo);
     doc.appendChild(root);
