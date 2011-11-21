@@ -24,3 +24,5 @@ captureStats:
   captureCode: "CaptureStatsBAM5"
 sequencers:
   rootDir: "/stornext/snfs0/next-gen/Illumina/Instruments"
+lims:
+  databaseName: "HGSC"
