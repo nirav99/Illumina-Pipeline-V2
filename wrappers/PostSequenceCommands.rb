@@ -35,3 +35,7 @@ alignerCmd = "ruby " + PathInfo::BIN_DIR + "/Aligner.rb"
 
 output = `#{alignerCmd}`
 puts output
+
+# Put CASAVA generated fastq files into its own directory
+FileUtils.mkdir("casava_fastq")
+FileUtils.mv("*.fastq.gz", "./casava_fastq")
