@@ -201,10 +201,8 @@ private
     Dir::chdir(PathInfo::BIN_DIR)
     cmd = "ruby PreProcessor.rb  fcname=" + fcName.to_s + " action=all"
     puts "Running command : " + cmd.to_s
-=begin
     output = `#{cmd}`
     puts output
-=end
     Dir::chdir(currDir)
   end
 end
