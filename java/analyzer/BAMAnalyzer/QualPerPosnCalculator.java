@@ -112,7 +112,8 @@ public class QualPerPosnCalculator extends MetricsCalculator
        }
        if(p != null)
        {
-         p.setYScale(yRange.minValue, yRange.maxValue + 10);
+//         p.setYScale(yRange.minValue, yRange.maxValue + 10);
+         p.setYScale(0, yRange.maxValue + 10);
          p.plotGraph();
        }
     }
