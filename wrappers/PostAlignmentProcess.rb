@@ -11,6 +11,7 @@ class PostAlignmentProcess
     uploadResultsToLIMS()
     emailAnalysisResults()
     cleanIntermediateFiles()
+    runSNPCaller()
     zipSequenceFiles()
   end
 
@@ -41,6 +42,11 @@ class PostAlignmentProcess
    puts "Deleting intermediate BAM file"
    deleteTempBAMFileCmd = "rm *_sorted.bam"
   `#{deleteTempBAMFileCmd}`
+
+   makeDirCmd = "mkdir casava_fastq"
+   `#{makeDirCmd}`
+   moveCmd = "mv *.fastq.gz ./casava_fastq"
+   `#{moveCmd}`
   end
 
   # Zip the final sequence files to save disk space. Potential improvement: The
@@ -50,6 +56,15 @@ class PostAlignmentProcess
     puts "Zipping sequence files"
     zipCmd = "bzip2 *sequence.txt"
     `#{zipCmd}`
+  end
+
+  def runSNPCaller()
+    bamFile = Dir["*_marked.bam"]
+    if bamFile != nil && bamFile.length > 0
+       snpCallCmd = "ruby /stornext/snfs6/1000GENOMES/challis/geyser_Atlas2_wrapper/Atlas2Submit.rb " +
+                     File.expand_path(bamFile[0])
+       `#{snpCallCmd}`
+    end
   end
 end
 
