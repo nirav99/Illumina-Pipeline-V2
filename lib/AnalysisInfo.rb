@@ -71,7 +71,13 @@ class AnalysisInfo
 
     fcName = xmlDoc.at("FCInfo")['Name']
     numCycles = xmlDoc.at("FCInfo")['NumCycles']
-    @readLength = Integer(numCycles.slice(/\d+/)) - 1
+
+    begin
+      @readLength = Integer(numCycles.slice(/\d+/)) - 1
+    rescue Exception => e
+      @readLength = 0
+    end
+
     @fcType = xmlDoc.at("FCInfo")['Type']
 
     fcBarcodeMatched = false
