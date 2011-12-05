@@ -106,7 +106,6 @@ class SequenceAnalyzerWrapper
                     " UNIQUE_PERCENT_FINISHED UNIQUE_PERCENT " + uniquePercent.to_s +
                     " PIPELINE_VERSION casava1.8"
     puts limsUploadCmd
-    return
     output = `#{limsUploadCmd}`
     puts "Output from LIMS upload command : " + output.to_s
   end
