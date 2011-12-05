@@ -25,7 +25,8 @@ class Aligner
 
   # Create cluster jobs to start the alignment
   def process()
-    if @reference.casecmp("sequence")
+    puts "FOUND REFERENCE PATH : " + @reference.to_s
+    if @reference.downcase.eql?("sequence")
       puts "No alignment to perform since reference is \"sequence\""
       puts "Running postrun script"
       runPostRunCmd("")
