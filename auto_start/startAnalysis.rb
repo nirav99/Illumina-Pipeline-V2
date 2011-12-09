@@ -140,8 +140,8 @@ private
   # Basecalling_Netcopy_complete.txt,
   # Basecalling_Netcopy_complete_READ1.txt
   # Basecalling_Netcopy_complete_READ2.txt
-  # If these files are copied more than an hour ago, add .rsync_finished, which
-  # will allow this flowcell to be picked up in the next iteration of cron job
+  # If these files are copied more than an hour ago, return true, which enables
+  # the pipeline to start the analysis on this flowcell.
   def fcReady?(fcName)
     fcDir = @instrDir + "/" + fcName
     puts "FCDir : " + fcDir.to_s
