@@ -43,7 +43,7 @@ class Aligner
       objUnzip.setNodeCores(1)
       objUnzip.setPriority(@queueName)
       objUnzip.runCommand()
-      prevJobID = objUnzip1.getJobName()
+      prevJobID = objUnzip.getJobName()
 
       # Remove the suffix .bz2 from the sequence file names to prevent any
       # errors downstream
