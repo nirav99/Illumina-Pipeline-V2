@@ -107,7 +107,10 @@ class Aligner
     previousJobName = bamProcessObj.getJobName()
   
     # If a capture chip design file was specified, run capture stats.
-    if @chipDesign != nil && !@chipDesign.empty?()
+    # If the name of the chip design ended with "none", ignore running capture
+    # stats.
+    if @chipDesign != nil && !@chipDesign.empty?() &&
+       !@chipDesign.downcase.match(/none$/)
       captureStatsCmd = buildCaptureStatsCmd()
       capStatsObj = Scheduler.new(@fcBarcode + "_CaptureStats", captureStatsCmd)
       capStatsObj.lockWholeNode(@queueName)
