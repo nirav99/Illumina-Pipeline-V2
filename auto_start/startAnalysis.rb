@@ -149,6 +149,17 @@ private
       return true
     end
    
+    # The pipeline does not automatically pick up any flowcell from sequencer
+    # 700601 (or SN601) for analysis. This is because Rui Chen's flowcells are 
+    # periodically loaded on 601. Current approach (16th Dec 2011) is to
+    # monitor the run finished emails from LIMS and insert the marker
+    # file ".rsync_finished" in the flowcell's directory. This will enable the
+    # pipeline to pick it up for analysis.
+    # However, please comment the following if block (4 lines) if the pipeline
+    # must auto pick up all flowcells on 601. In this case, when Rui Chen's
+    # flowcells are picked up, an error will occur while trying to contact LIMS
+    # and an email will be sent. However. all HGSC flowcells on this sequencers
+    # should be picked up properly.
     if fcName.match(/SN601/) 
        puts "Flowcell " + fcName + " is not configured for automatic analysis"
        return false
