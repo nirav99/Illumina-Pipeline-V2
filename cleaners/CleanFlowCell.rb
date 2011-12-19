@@ -59,12 +59,12 @@ class CleanFlowcell
     rmFilterFilesCmd = "rm ./Data/Intensities/BaseCalls/*.filter"
     output = `#{rmFilterFilesCmd}`
 
-    # Commenting out this block because CASAVA 1.8 does not produce qseq files.
-=begin
+    # If a flowcell was run with CASAVA 1.7 bcl to qseq generation (for
+    # additional) analysis, it might have qseq files. Hence, we retain the code
+    # to remove qseq files.
     puts "Removing qseq files"
     rmQseqFilesCmd = "rm ./Data/Intensities/BaseCalls/*_qseq.txt"
     output = `#{rmQseqFilesCmd}`
-=end
 
     puts "Removing lane directories (NOT GERALD)"
     rmLanesDirCmd = "rm -rf ./Data/Intensities/BaseCalls/L00*"
